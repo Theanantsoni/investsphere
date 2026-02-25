@@ -16,14 +16,12 @@ import SIPPlannerPage from "./modules/sip/pages/SIPPlannerPage";
 // Market News Page
 import MarketNewsPage from "./modules/marketNews/pages/MarketNewsPage";
 
-
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Layout Routes */}
+        {/* Routes Inside Layout */}
         <Route path="/" element={<MainLayout />}>
-          
           {/* Home */}
           <Route index element={<HomePage />} />
 
@@ -34,19 +32,18 @@ function App() {
             element={<IPOApplicationProcessPage />}
           />
 
-          {/* ✅ SIP Nested Routes */}
+          {/* SIP Nested Routes */}
           <Route path="sip">
             <Route index element={<SIPPage />} />
-            <Route path="planner" element={<SIPPlannerPage />} /> {/* ✅ NEW */}
-            <Route path=":id" element={<SIPDetailPage />} />
+            <Route path="planner" element={<SIPPlannerPage />} />
+            <Route path=":id" element={<SIPDetailPage />} />{" "}
           </Route>
 
           {/* Market News */}
-          <Route path="/market-news" element={<MarketNewsPage />} />
-
+          <Route path="market-news" element={<MarketNewsPage />} />
         </Route>
 
-        {/* Outside Layout Routes */}
+        {/* Outside Layout Route */}
         <Route path="ipo/apply/:symbol" element={<IPOApplyPage />} />
       </Routes>
     </BrowserRouter>
