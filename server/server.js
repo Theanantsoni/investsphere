@@ -498,6 +498,23 @@ app.get("/api/market-news", async (req, res) => {
   }
 });
 
+// ============================================
+// SIP Detail Route
+// ============================================
+
+app.get("/api/sip/:id", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `https://api.mfapi.in/mf/${req.params.id}`
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("SIP Detail API Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch fund details" });
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Running on http://localhost:${PORT}`);
