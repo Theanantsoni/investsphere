@@ -1,7 +1,12 @@
 Notes: 
 
+<<<<<<< HEAD
 SIP Details Final with table calender - 26/02/26
 
 SIP data fetch and display in card format.
 Market news data fetch and display in card format. 
 
+=======
+SIP data fetch and display in card format.
+Market news data fetch and display in card format. 
+>>>>>>> b563a19ef24d2fc9878a8309e2465706054a4586
