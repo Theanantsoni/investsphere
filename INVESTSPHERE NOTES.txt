@@ -1,0 +1,239 @@
+========================================================
+              MERN STACK FINANCE WEBSITE - INVESTSPHERE 
+          (SIP | STOCKS | IPO) – COMPLETE BASICS
+========================================================
+
+
+========================================================
+MODULE 1: SIP (Systematic Investment Plan)
+========================================================
+
+--------------------------------------------------------
+SIP – BASIC CONCEPTS
+--------------------------------------------------------
+
+1. Monthly Investment
+   - Har mahine invest kiya jane wala fixed amount
+   - Example: ₹1,000 / ₹5,000 / ₹10,000
+
+2. Time Period
+   - Investment duration (years me)
+   - Example: 5 years, 10 years, 20 years
+
+3. Expected Return (% per year)
+   - Annual estimated return
+   - Commonly: 10% – 15%
+
+4. Compounding
+   - Interest par interest
+   - Time badhne par returns fast grow karte hain
+
+5. Total Invested Amount
+   - Monthly Amount × Total Months
+
+6. Maturity Amount
+   - Time ke end me total value (investment + profit)
+
+7. Profit / Gain
+   - Maturity Amount – Total Invested Amount
+
+8. Risk Level
+   - Market dependent
+   - Long term me risk kam hota hai
+
+9. Investment Type
+   - Equity SIP
+   - Debt SIP
+   - Hybrid SIP
+
+
+--------------------------------------------------------
+SIP – WEBSITE FEATURES
+--------------------------------------------------------
+
+Frontend (React):
+- Monthly Amount Input
+- Investment Duration Selector (Years)
+- Expected Return Input
+- Calculate Button
+- Result Cards:
+  - Total Invested
+  - Total Return
+  - Net Profit
+- Growth Graph (Line / Bar Chart)
+
+Backend (Node + Express):
+- SIP calculation logic
+- REST API for calculation
+- Validation (negative values, empty fields)
+
+Database (MongoDB):
+- User SIP history
+- Saved SIP calculations
+- Timestamp (date & time)
+
+Extra Features (Optional):
+- Compare multiple SIPs
+- Download result as PDF
+- User login based SIP history
+
+
+========================================================
+MODULE 2: STOCKS (Share Market)
+========================================================
+
+--------------------------------------------------------
+STOCKS – BASIC CONCEPTS
+--------------------------------------------------------
+
+1. Share
+   - Company ka ownership ka ek part
+
+2. Share Price
+   - Ek share ki current value
+
+3. Market Price
+   - Real-time buying/selling price
+
+4. Quantity
+   - Total shares purchased
+
+5. Buy Price
+   - Jis price par share kharida
+
+6. Sell Price
+   - Jis price par share becha
+
+7. Profit / Loss
+   - (Sell Price – Buy Price) × Quantity
+
+8. Market Capitalization
+   - Company ki total market value
+   - Share Price × Total Shares
+
+9. 52 Week High
+   - Last 1 year ka highest price
+
+10. 52 Week Low
+    - Last 1 year ka lowest price
+
+11. Volatility
+    - Price me ups & downs
+
+12. Risk Level
+    - Stock wise risk different hota hai
+
+
+--------------------------------------------------------
+STOCKS – WEBSITE FEATURES
+--------------------------------------------------------
+
+PHASE 1 (Beginner Level):
+- Static stock list
+- Dummy prices
+- Buy/Sell price input
+- Quantity input
+- Profit/Loss calculator
+- Basic stock detail page
+
+PHASE 2 (Advanced Level):
+- Live stock market API
+- Real-time price updates
+- Interactive charts
+- Watchlist feature
+- Search & filter stocks
+
+MERN Stack Usage:
+- React: Stock cards, charts, UI
+- Node: Stock APIs, calculations
+- MongoDB: Watchlist, saved stocks
+
+Extra Features (Optional):
+- Portfolio summary
+- Daily gain/loss
+- Stock comparison
+- Favorite stocks
+
+
+========================================================
+MODULE 3: IPO (Initial Public Offering)
+========================================================
+
+--------------------------------------------------------
+IPO – BASIC CONCEPTS
+--------------------------------------------------------
+
+1. IPO
+   - Company first time public ko shares bechti hai
+
+2. Issue Price
+   - IPO ke share ka price range
+
+3. Open Date
+   - IPO apply karne ka start date
+
+4. Close Date
+   - IPO apply karne ka end date
+
+5. Lot Size
+   - Minimum shares per application
+
+6. Minimum Investment
+   - Lot Size × Issue Price
+
+7. Allotment Status
+   - Shares mile ya nahi
+
+8. Listing Date
+   - Stock exchange par listing date
+
+9. Listing Price
+   - First day ka market price
+
+10. GMP (Grey Market Premium)
+    - Unofficial market premium
+
+11. Risk Factor
+    - IPO fully guaranteed nahi hota
+
+
+--------------------------------------------------------
+IPO – WEBSITE FEATURES
+--------------------------------------------------------
+
+Frontend:
+- Upcoming IPO list
+- IPO detail page
+- Apply amount calculator
+- Subscription status display
+
+Backend:
+- IPO data API
+- IPO status handling
+- Date based filtering
+
+Database:
+- IPO history
+- User interested IPOs
+- Applied IPO records
+
+Extra Features (Optional):
+- IPO reminders
+- GMP tracking
+- Past IPO performance
+- Listing gain/loss calculation
+
+
+========================================================
+COMMON FEATURES FOR ALL MODULES
+========================================================
+
+- User Authentication (Login / Register)
+- User Dashboard
+- Saved history
+- Responsive UI
+- Admin panel (future scope)
+
+========================================================
+END OF DOCUMENT
+========================================================

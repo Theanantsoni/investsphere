@@ -1,0 +1,203 @@
+================================================================================
+                         INVESTSPHERE (ADVANCE MERN STRUCTURE)
+                     SIP | STOCKS | IPO – PRODUCTION READY
+================================================================================
+
+
+================================================================================
+ROOT LEVEL
+================================================================================
+
+investsphere/
+│
+├── client/                         # React Frontend
+├── server/                         # Node + Express Backend
+├── docs/                           # Project Documentation
+├── scripts/                        # Automation & setup scripts
+├── .env                            # Environment variables
+├── .gitignore
+├── package.json                    # Root scripts (optional)
+└── README.md
+
+
+================================================================================
+FRONTEND (REACT – CLIENT)
+================================================================================
+
+client/
+│
+├── public/
+│   ├── favicon.ico
+│   ├── logo.svg
+│   └── index.html
+│
+├── src/
+│   │
+│   ├── assets/                     # Static assets
+│   │   ├── logos/
+│   │   │   ├── logo-light.svg
+│   │   │   ├── logo-dark.svg
+│   │   │   └── logo-icon.svg
+│   │   │
+│   │   ├── images/
+│   │   │   ├── hero/
+│   │   │   ├── sip/
+│   │   │   ├── stocks/
+│   │   │   ├── ipo/
+│   │   │   └── empty-states/
+│   │   │
+│   │   └── icons/
+│   │
+│   ├── components/                 # Reusable UI components
+│   │   ├── common/
+│   │   │   ├── Button.jsx
+│   │   │   ├── Input.jsx
+│   │   │   ├── Loader.jsx
+│   │   │   └── Modal.jsx
+│   │   │
+│   │   ├── charts/
+│   │   │   ├── LineChart.jsx
+│   │   │   ├── BarChart.jsx
+│   │   │   └── PieChart.jsx
+│   │   │
+│   │   └── layout/
+│   │       ├── Navbar.jsx
+│   │       ├── Sidebar.jsx
+│   │       └── Footer.jsx
+│   │
+│   ├── pages/                      # Page-level components
+│   │   ├── Home/
+│   │   │   └── Home.jsx
+│   │   │
+│   │   ├── Auth/
+│   │   │   ├── Login.jsx
+│   │   │   └── Register.jsx
+│   │   │
+│   │   ├── SIP/
+│   │   │   ├── SipCalculator.jsx
+│   │   │   ├── SipHistory.jsx
+│   │   │   └── SipDetails.jsx
+│   │   │
+│   │   ├── Stocks/
+│   │   │   ├── StockList.jsx
+│   │   │   ├── StockDetails.jsx
+│   │   │   └── Watchlist.jsx
+│   │   │
+│   │   ├── IPO/
+│   │   │   ├── IpoList.jsx
+│   │   │   └── IpoDetails.jsx
+│   │   │
+│   │   └── Dashboard/
+│   │       └── Dashboard.jsx
+│   │
+│   ├── routes/
+│   │   └── AppRoutes.jsx
+│   │
+│   ├── services/                   # API calls
+│   │   ├── sip.service.js
+│   │   ├── stock.service.js
+│   │   ├── ipo.service.js
+│   │   └── auth.service.js
+│   │
+│   ├── context/                    # Global state
+│   │   ├── AuthContext.jsx
+│   │   └── UserContext.jsx
+│   │
+│   ├── hooks/                      # Custom hooks
+│   │   └── useAuth.js
+│   │
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── helpers.js
+│   │   └── validators.js
+│   │
+│   ├── styles/
+│   │   ├── theme.js
+│   │   └── global.css
+│   │
+│   ├── App.jsx
+│   └── main.jsx
+│
+├── .env
+├── package.json
+└── vite.config.js
+
+
+================================================================================
+BACKEND (NODE + EXPRESS – SERVER)
+================================================================================
+
+server/
+│
+├── src/
+│   │
+│   ├── config/
+│   │   ├── db.js                  # MongoDB connection
+│   │   └── env.js
+│   │
+│   ├── models/
+│   │   ├── User.model.js
+│   │   ├── Sip.model.js
+│   │   ├── Stock.model.js
+│   │   ├── Watchlist.model.js
+│   │   └── Ipo.model.js
+│   │
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── sip.controller.js
+│   │   ├── stock.controller.js
+│   │   └── ipo.controller.js
+│   │
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── sip.routes.js
+│   │   ├── stock.routes.js
+│   │   └── ipo.routes.js
+│   │
+│   ├── services/
+│   │   ├── sip.service.js
+│   │   ├── stock.service.js
+│   │   └── ipo.service.js
+│   │
+│   ├── middlewares/
+│   │   ├── auth.middleware.js
+│   │   ├── error.middleware.js
+│   │   └── validate.middleware.js
+│   │
+│   ├── utils/
+│   │   ├── sipCalculator.js
+│   │   ├── responseHandler.js
+│   │   └── logger.js
+│   │
+│   ├── app.js                     # Express app setup
+│   └── server.js                  # Server entry point
+│
+├── .env
+├── package.json
+└── nodemon.json
+
+
+================================================================================
+DOCUMENTATION & SUPPORT
+================================================================================
+
+docs/
+├── api-docs.md
+├── database-schema.md
+├── system-design.md
+└── deployment-guide.md
+
+
+================================================================================
+SCRIPTS & DEVOPS
+================================================================================
+
+scripts/
+├── seed-db.js
+├── backup-db.js
+└── deploy.sh
+
+
+================================================================================
+END OF STRUCTURE
+================================================================================

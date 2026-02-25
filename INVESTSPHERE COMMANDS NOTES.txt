@@ -1,0 +1,112 @@
+========================================================
+        INVESTSPHERE – PROJECT SETUP COMMANDS
+========================================================
+
+
+========================================================
+STEP 1: CREATE MAIN PROJECT FOLDER
+========================================================
+
+# Create main project directory
+mkdir investsphere
+
+# Go inside project folder
+cd investsphere
+
+
+========================================================
+STEP 2: FRONTEND (REACT) SETUP
+========================================================
+
+# Create React app (Vite – recommended)
+npm create vite@latest client
+
+# Select options:
+# Framework → React
+# Variant   → JavaScript / TypeScript (your choice)
+
+# Go to frontend folder
+cd client
+
+# Install dependencies
+npm install
+
+# Start frontend server
+npm run dev
+
+# Open in browser:
+# http://localhost:5173
+
+# Go back to main folder
+cd ..
+
+
+========================================================
+STEP 3: BACKEND (NODE + EXPRESS) SETUP
+========================================================
+
+# Create backend folder
+mkdir server
+cd server
+
+# Initialize Node project
+npm init -y
+
+# Install backend dependencies
+npm install express mongoose cors dotenv
+
+# Install dev dependency
+npm install --save-dev nodemon
+
+# Create basic folder structure
+mkdir controllers routes models config middlewares utils
+
+# Create entry file
+touch index.js
+
+# Go back to root folder
+cd ..
+
+
+========================================================
+STEP 4: COMMON FILES & CONFIG
+========================================================
+
+# Create environment file
+touch .env
+
+# Create README
+touch README.md
+
+# Project structure check
+
+tree
+
+
+========================================================
+PROJECT STRUCTURE (AFTER SETUP)
+========================================================
+
+investsphere/
+│
+├── client/                # React Frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── server/                # Node + Express Backend
+│   ├── controllers/
+│   ├── routes/
+│   ├── models/
+│   ├── config/
+│   ├── middlewares/
+│   ├── utils/
+│   ├── index.js
+│   └── package.json
+│
+├── .env
+└── README.md
+
+========================================================
+END
+========================================================
