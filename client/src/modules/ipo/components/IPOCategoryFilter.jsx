@@ -1,7 +1,7 @@
 import React from "react";
 
 const IPOCategoryFilter = ({ category, setCategory }) => {
-  const categories = ["All", "NSE", "NASDAQ", "SME"];
+  const categories = ["All", "NASDAQ", "NYSE"];
 
   return (
     <div className="flex gap-3 flex-wrap">
@@ -9,10 +9,12 @@ const IPOCategoryFilter = ({ category, setCategory }) => {
         <button
           key={cat}
           onClick={() => setCategory(cat)}
-          className={`px-4 py-1 rounded-full text-sm border 
-            ${category === cat 
-              ? "bg-blue-600 text-white" 
-              : "bg-gray-100 text-gray-700"}`}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium transition
+            ${
+              category === cat
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
         >
           {cat}
         </button>

@@ -104,7 +104,7 @@ app.get("/api/ipo/:type", async (req, res) => {
           symbol: ipo.symbol,
           name: ipo.name,
           exchange: ipo.exchange,
-          type: ipo.type || "EQUITY",
+          type: ipo.exchange,   
           price: ipo.price || "N/A",
           numberOfShares: ipo.numberOfShares || 0,
           totalSharesValue: ipo.totalSharesValue || 0,
@@ -215,10 +215,10 @@ app.get("/api/market", async (req, res) => {
     }
 
     const [sensex, nifty, bankNifty] = await Promise.all([
-  fetchQuote("^BSESN"),      // Sensex
-  fetchQuote("^NSEI"),       // Nifty 50
-  fetchQuote("^NSEBANK"),    // Bank Nifty
-]);
+      fetchQuote("^BSESN"),      // Sensex
+      fetchQuote("^NSEI"),       // Nifty 50
+      fetchQuote("^NSEBANK"),    // Bank Nifty
+    ]);
 
     const data = {
       sensex: sensex || {},
@@ -261,9 +261,9 @@ app.get("/api/market-history", async (req, res) => {
 
     const range =
       days == 1 ? "1d" :
-      days == 7 ? "7d" :
-      days == 30 ? "1mo" :
-      "3mo";
+        days == 7 ? "7d" :
+          days == 30 ? "1mo" :
+            "3mo";
 
     const response = await axios.get(
       `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
@@ -281,8 +281,8 @@ app.get("/api/market-history", async (req, res) => {
     const result = response.data.chart.result?.[0];
     if (!result) return res.json([]);
 
-   const timestamps = result.timestamp || [];
-const closes = result.indicators?.quote?.[0]?.close || [];
+    const timestamps = result.timestamp || [];
+    const closes = result.indicators?.quote?.[0]?.close || [];
 
     const formatted = timestamps.map((time, i) => ({
       date: new Date(time * 1000).toLocaleDateString(),

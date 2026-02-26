@@ -1,13 +1,14 @@
 import { useState } from "react";
 import useNews from "../hooks/useNews";
 import NewsCard from "../components/NewsCard";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 import { Newspaper, TrendingUp, Landmark, BarChart3 } from "lucide-react";
 
 const MarketNewsPage = () => {
   const [page, setPage] = useState(1);
   const [category, setCategory] = useState("market");
 
-  const { news, totalPages, loading } = useNews(page, category);
+  const { news = [], totalPages, loading } = useNews(page, category);
 
   const categories = [
     { key: "market", label: "Market", icon: <Newspaper size={16} /> },
@@ -15,6 +16,11 @@ const MarketNewsPage = () => {
     { key: "sip", label: "SIP", icon: <TrendingUp size={16} /> },
     { key: "stock", label: "Stock", icon: <BarChart3 size={16} /> },
   ];
+
+  // ✅ FIRST PAGE LOAD → FULL GIF LOADER
+  if (loading && news.length === 0) {
+    return <InvestSphereLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-6 md:px-12 py-12">
@@ -88,6 +94,7 @@ const MarketNewsPage = () => {
           Next ➡
         </button>
       </div>
+
     </div>
   );
 };

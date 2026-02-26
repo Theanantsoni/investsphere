@@ -1,203 +1,121 @@
-================================================================================
-                         INVESTSPHERE (ADVANCE MERN STRUCTURE)
-                     SIP | STOCKS | IPO – PRODUCTION READY
-================================================================================
-
-
-================================================================================
-ROOT LEVEL
-================================================================================
-
-investsphere/
+INVESTSPHERE
 │
-├── client/                         # React Frontend
-├── server/                         # Node + Express Backend
-├── docs/                           # Project Documentation
-├── scripts/                        # Automation & setup scripts
-├── .env                            # Environment variables
-├── .gitignore
-├── package.json                    # Root scripts (optional)
-└── README.md
-
-
-================================================================================
-FRONTEND (REACT – CLIENT)
-================================================================================
-
-client/
+├── client
+│   ├── public
+│   │   ├── Images/
+│   │   └── vite.svg
+│   │
+│   ├── src
+│   │   ├── assets/
+│   │   ├── hooks/
+│   │   │
+│   │   ├── modules
+│   │   │   │
+│   │   │   ├── ipo
+│   │   │   │   ├── components
+│   │   │   │   │   ├── IPOCard.jsx
+│   │   │   │   │   ├── IPOCategoryFilter.jsx
+│   │   │   │   │   ├── IPOFilters.jsx
+│   │   │   │   │   ├── IPOInvestmentGuide.jsx
+│   │   │   │   │   ├── IPOList.jsx
+│   │   │   │   │   ├── IPOPagination.jsx
+│   │   │   │   │   ├── IPOSearchBar.jsx
+│   │   │   │   │   └── IPOStats.jsx
+│   │   │   │   │
+│   │   │   │   ├── hooks
+│   │   │   │   │   ├── useCurrency.js
+│   │   │   │   │   ├── useIPO.js
+│   │   │   │   │   └── useIPOFilters.js
+│   │   │   │   │
+│   │   │   │   └── pages
+│   │   │   │       ├── IPOApplicationProcessPage.jsx
+│   │   │   │       ├── IPOApplyPage.jsx
+│   │   │   │       ├── IPOPage.jsx
+│   │   │   │       └── ipo.routes.jsx
+│   │   │   │
+│   │   │   ├── marketNews
+│   │   │   │   ├── components
+│   │   │   │   │   ├── NewsCard.jsx
+│   │   │   │   │   ├── NewsPagination.jsx
+│   │   │   │   │   └── NewsSkeleton.jsx
+│   │   │   │   │
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── useNews.js
+│   │   │   │   │
+│   │   │   │   └── pages
+│   │   │   │       ├── MarketNewsPage.jsx
+│   │   │   │       └── news.routes.jsx
+│   │   │   │
+│   │   │   ├── sip
+│   │   │   │   ├── components
+│   │   │   │   │   ├── SIPCalculatorForm.jsx
+│   │   │   │   │   ├── SIPCard.jsx
+│   │   │   │   │   ├── SIPFilters.jsx
+│   │   │   │   │   ├── SIPHeroSection.jsx
+│   │   │   │   │   ├── SIPList.jsx
+│   │   │   │   │   ├── SIPLoadingSkeleton.jsx
+│   │   │   │   │   ├── SIPPagination.jsx
+│   │   │   │   │   ├── SIPResultCard.jsx
+│   │   │   │   │   ├── SIPSearchBar.jsx
+│   │   │   │   │   └── SIPStatsBar.jsx
+│   │   │   │   │
+│   │   │   │   ├── hooks
+│   │   │   │   │   └── useSIP.js
+│   │   │   │   │
+│   │   │   │   ├── pages
+│   │   │   │   │   ├── SIPDetailPage.jsx
+│   │   │   │   │   ├── SIPPage.jsx
+│   │   │   │   │   └── SIPPlannerPage.jsx
+│   │   │   │   │
+│   │   │   │   ├── utils
+│   │   │   │   │   └── sipUtils.js
+│   │   │   │   │
+│   │   │   │   └── sip.routes.jsx
+│   │   │   │
+│   │   │   └── stock
+│   │   │       ├── components/
+│   │   │       ├── pages/
+│   │   │       └── services/
+│   │   │
+│   │   ├── pages
+│   │   │   └── HomePage.jsx
+│   │   │
+│   │   ├── services/
+│   │   │
+│   │   ├── shared
+│   │   │   ├── components
+│   │   │   │   ├── Footer.jsx
+│   │   │   │   └── Navbar.jsx
+│   │   │   │
+│   │   │   └── layout
+│   │   │       └── MainLayout.jsx
+│   │   │
+│   │   ├── ui/
+│   │   │
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   │
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.cjs
+│   ├── README.md
+│   ├── tailwind.config.js
+│   └── vite.config.js
 │
-├── public/
-│   ├── favicon.ico
-│   ├── logo.svg
-│   └── index.html
+├── server
+│   ├── .env
+│   ├── package-lock.json
+│   ├── package.json
+│   └── server.js
 │
-├── src/
-│   │
-│   ├── assets/                     # Static assets
-│   │   ├── logos/
-│   │   │   ├── logo-light.svg
-│   │   │   ├── logo-dark.svg
-│   │   │   └── logo-icon.svg
-│   │   │
-│   │   ├── images/
-│   │   │   ├── hero/
-│   │   │   ├── sip/
-│   │   │   ├── stocks/
-│   │   │   ├── ipo/
-│   │   │   └── empty-states/
-│   │   │
-│   │   └── icons/
-│   │
-│   ├── components/                 # Reusable UI components
-│   │   ├── common/
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Loader.jsx
-│   │   │   └── Modal.jsx
-│   │   │
-│   │   ├── charts/
-│   │   │   ├── LineChart.jsx
-│   │   │   ├── BarChart.jsx
-│   │   │   └── PieChart.jsx
-│   │   │
-│   │   └── layout/
-│   │       ├── Navbar.jsx
-│   │       ├── Sidebar.jsx
-│   │       └── Footer.jsx
-│   │
-│   ├── pages/                      # Page-level components
-│   │   ├── Home/
-│   │   │   └── Home.jsx
-│   │   │
-│   │   ├── Auth/
-│   │   │   ├── Login.jsx
-│   │   │   └── Register.jsx
-│   │   │
-│   │   ├── SIP/
-│   │   │   ├── SipCalculator.jsx
-│   │   │   ├── SipHistory.jsx
-│   │   │   └── SipDetails.jsx
-│   │   │
-│   │   ├── Stocks/
-│   │   │   ├── StockList.jsx
-│   │   │   ├── StockDetails.jsx
-│   │   │   └── Watchlist.jsx
-│   │   │
-│   │   ├── IPO/
-│   │   │   ├── IpoList.jsx
-│   │   │   └── IpoDetails.jsx
-│   │   │
-│   │   └── Dashboard/
-│   │       └── Dashboard.jsx
-│   │
-│   ├── routes/
-│   │   └── AppRoutes.jsx
-│   │
-│   ├── services/                   # API calls
-│   │   ├── sip.service.js
-│   │   ├── stock.service.js
-│   │   ├── ipo.service.js
-│   │   └── auth.service.js
-│   │
-│   ├── context/                    # Global state
-│   │   ├── AuthContext.jsx
-│   │   └── UserContext.jsx
-│   │
-│   ├── hooks/                      # Custom hooks
-│   │   └── useAuth.js
-│   │
-│   ├── utils/
-│   │   ├── constants.js
-│   │   ├── helpers.js
-│   │   └── validators.js
-│   │
-│   ├── styles/
-│   │   ├── theme.js
-│   │   └── global.css
-│   │
-│   ├── App.jsx
-│   └── main.jsx
-│
-├── .env
-├── package.json
-└── vite.config.js
-
-
-================================================================================
-BACKEND (NODE + EXPRESS – SERVER)
-================================================================================
-
-server/
-│
-├── src/
-│   │
-│   ├── config/
-│   │   ├── db.js                  # MongoDB connection
-│   │   └── env.js
-│   │
-│   ├── models/
-│   │   ├── User.model.js
-│   │   ├── Sip.model.js
-│   │   ├── Stock.model.js
-│   │   ├── Watchlist.model.js
-│   │   └── Ipo.model.js
-│   │
-│   ├── controllers/
-│   │   ├── auth.controller.js
-│   │   ├── sip.controller.js
-│   │   ├── stock.controller.js
-│   │   └── ipo.controller.js
-│   │
-│   ├── routes/
-│   │   ├── auth.routes.js
-│   │   ├── sip.routes.js
-│   │   ├── stock.routes.js
-│   │   └── ipo.routes.js
-│   │
-│   ├── services/
-│   │   ├── sip.service.js
-│   │   ├── stock.service.js
-│   │   └── ipo.service.js
-│   │
-│   ├── middlewares/
-│   │   ├── auth.middleware.js
-│   │   ├── error.middleware.js
-│   │   └── validate.middleware.js
-│   │
-│   ├── utils/
-│   │   ├── sipCalculator.js
-│   │   ├── responseHandler.js
-│   │   └── logger.js
-│   │
-│   ├── app.js                     # Express app setup
-│   └── server.js                  # Server entry point
-│
-├── .env
-├── package.json
-└── nodemon.json
-
-
-================================================================================
-DOCUMENTATION & SUPPORT
-================================================================================
-
-docs/
-├── api-docs.md
-├── database-schema.md
-├── system-design.md
-└── deployment-guide.md
-
-
-================================================================================
-SCRIPTS & DEVOPS
-================================================================================
-
-scripts/
-├── seed-db.js
-├── backup-db.js
-└── deploy.sh
-
-
-================================================================================
-END OF STRUCTURE
-================================================================================
+├── INVESTSPHERE COMMAND...
+├── INVESTSPHERE FILE-FOLDER...
+├── INVESTSPHERE NOTES.txt
+├── NOTES
+├── package-lock.json
+└── package.json

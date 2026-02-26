@@ -3,9 +3,10 @@ import useSIP from "../hooks/useSIP";
 import SIPCalculatorForm from "../components/SIPCalculatorForm";
 import SIPResultCard from "../components/SIPResultCard";
 import { getFundCategory } from "../utils/sipUtils";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const SIPPlannerPage = () => {
-  const { sipData } = useSIP();
+  const { sipData, loading } = useSIP(); // ✅ loading added
 
   const [result, setResult] = useState(null);
   const [recommendedFunds, setRecommendedFunds] = useState([]);
@@ -45,6 +46,11 @@ const SIPPlannerPage = () => {
 
     setRecommendedFunds(matchedFunds);
   };
+
+  // ✅ PAGE LOAD → FULL GIF LOADER
+  if (loading) {
+    return <InvestSphereLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-16">

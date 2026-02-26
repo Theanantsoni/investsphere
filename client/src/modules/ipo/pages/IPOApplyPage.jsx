@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const IPOApplyPage = () => {
   const { symbol } = useParams();
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true); // ✅ added
+  const [submitting, setSubmitting] = useState(false); // ✅ added
 
   const [formData, setFormData] = useState({
     investorCategory: "Retail",
@@ -17,6 +21,14 @@ const IPOApplyPage = () => {
   });
 
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,8 +46,23 @@ const IPOApplyPage = () => {
       return;
     }
 
-    setSubmitted(true);
+    setSubmitting(true); // ✅ show loader on submit
+
+    setTimeout(() => {
+      setSubmitting(false);
+      setSubmitted(true);
+    }, 800);
   };
+
+  // ✅ Initial Page Load Loader
+  if (loading) {
+    return <InvestSphereLoader />;
+  }
+
+  // ✅ Submit Loader Overlay
+  if (submitting) {
+    return <InvestSphereLoader />;
+  }
 
   if (submitted) {
     return (

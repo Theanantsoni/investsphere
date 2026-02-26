@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import useIPO from "../hooks/useIPO";
@@ -6,6 +6,7 @@ import IPOList from "../components/IPOList";
 import IPOSearchBar from "../components/IPOSearchBar";
 import IPOCategoryFilter from "../components/IPOCategoryFilter";
 import IPOInvestmentGuide from "../components/IPOInvestmentGuide";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const IPOPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,13 @@ const IPOPage = () => {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [initialLoad, setInitialLoad] = useState(true); // ✅ added
+
+  useEffect(() => {
+    if (!loading) {
+      setInitialLoad(false);
+    }
+  }, [loading]);
 
   const filteredIPOs = useMemo(() => {
     return ipos.filter((ipo) => {
@@ -23,33 +31,35 @@ const IPOPage = () => {
         ipo.symbol?.toLowerCase().includes(search.toLowerCase());
 
       const matchesCategory =
-        category === "All" ||
-        ipo.exchange?.toLowerCase().includes(category.toLowerCase());
+        category === "All" || ipo.exchange?.toUpperCase().includes(category);
 
       return matchesSearch && matchesCategory;
     });
   }, [ipos, search, category]);
 
+  // ✅ First Page Load Loader
+  if (initialLoad && loading) {
+    return <InvestSphereLoader />;
+  }
+
   return (
     <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
-
       {/* Application Process Button */}
-<div className="mb-10">
-  <button
-    onClick={() => navigate("/ipo/application-process")}
-    className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl shadow-md transition duration-300"
-  >
-    <span className="text-lg">📊</span>
-    <span className="text-lg font-semibold">
-      IPO Application Process Instructions
-    </span>
-  </button>
+      <div className="mb-10">
+        <button
+          onClick={() => navigate("/ipo/application-process")}
+          className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl shadow-md transition duration-300"
+        >
+          <span className="text-lg">📊</span>
+          <span className="text-lg font-semibold">
+            IPO Application Process Instructions
+          </span>
+        </button>
 
-  <p className="text-gray-500 text-sm mt-3">
-    Learn step-by-step how to apply for an IPO through your broker app.
-  </p>
-</div>
-
+        <p className="text-gray-500 text-sm mt-3">
+          Learn step-by-step how to apply for an IPO through your broker app.
+        </p>
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-6 mb-8 border-b pb-3">
@@ -68,8 +78,6 @@ const IPOPage = () => {
         ))}
       </div>
 
-      
-
       {/* Search + Category */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
         <div className="w-full md:w-1/2">
@@ -82,11 +90,7 @@ const IPOPage = () => {
       </div>
 
       {/* Error */}
-      {error && (
-        <p className="text-red-500 mb-4">
-          Error loading IPOs
-        </p>
-      )}
+      {error && <p className="text-red-500 mb-4">Error loading IPOs</p>}
 
       {/* IPO Cards */}
       <IPOList ipos={filteredIPOs} loading={loading} />
@@ -95,8 +99,6 @@ const IPOPage = () => {
       <div className="mt-16">
         <IPOInvestmentGuide />
       </div>
-
-
     </div>
   );
 };
