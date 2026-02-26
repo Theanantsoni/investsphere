@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   UserCheck,
@@ -10,9 +10,24 @@ import {
   AlertTriangle,
   ArrowLeft
 } from "lucide-react";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const IPOApplicationProcessPage = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true); // ✅ added
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // ✅ Page Load → GIF
+  if (loading) {
+    return <InvestSphereLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white py-12 px-6 md:px-16">

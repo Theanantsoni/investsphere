@@ -1,10 +1,11 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState, useMemo, useRef } from "react";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SIPDetailPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const navSectionRef = useRef(null);
 
   const [fund, setFund] = useState(null);
@@ -13,42 +14,28 @@ const SIPDetailPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const rowsPerPage = 10;
+  const navigate = useNavigate();
 
   // ================= DATE FILTER STATES =================
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
-
-  const fiveYearsAgo = new Date();
-  fiveYearsAgo.setFullYear(today.getFullYear() - 5);
-
-  const [startDate, setStartDate] = useState(
-    fiveYearsAgo.toISOString().split("T")[0]
-  );
-
-  const [endDate, setEndDate] = useState(
-    yesterday.toISOString().split("T")[0]
-  );
+  const [tempStartDate, setTempStartDate] = useState("");
+  const [tempEndDate, setTempEndDate] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
 
   // ================= SIP STATES =================
   const [monthly, setMonthly] = useState(15000);
   const [rate, setRate] = useState(10);
   const [years, setYears] = useState(5);
 
-  // ================= SIP CALCULATION =================
-  const futureValue = useMemo(() => {
-    if (!monthly || !years) return 0;
-
-    const n = years * 12;
-    if (rate === 0) return monthly * n;
-
-    const r = rate / 100 / 12;
-    const fv = monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-    return Math.round(fv);
-  }, [monthly, rate, years]);
-
-  const totalInvested = monthly * years * 12;
-  const estimatedGain = futureValue - totalInvested;
+  // ================= DATE PARSER =================
+  const parseDate = (dateStr) => {
+    if (!dateStr) return null;
+    const parts = dateStr.split("-");
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      return new Date(Number(y), Number(m) - 1, Number(d));
+    }
+    return new Date(dateStr);
+  };
 
   // ================= FETCH FUND =================
   useEffect(() => {
@@ -64,7 +51,6 @@ const SIPDetailPage = () => {
         const res = await axios.get(`/api/sip/${id}`);
         setFund(res.data);
       } catch (err) {
-        console.error(err);
         setError("Unable to fetch fund details");
       } finally {
         setLoading(false);
@@ -74,56 +60,65 @@ const SIPDetailPage = () => {
     fetchDetails();
   }, [id]);
 
-  // ================= RESET PAGE WHEN FILTER CHANGES =================
+  // ================= AUTO FILTER =================
   useEffect(() => {
+    if (!fund?.data?.length) return;
+
+    let sorted = [...fund.data].sort(
+      (a, b) => parseDate(b.date) - parseDate(a.date),
+    );
+
+    if (tempStartDate && tempEndDate) {
+      const start = new Date(tempStartDate);
+      const end = new Date(tempEndDate);
+
+      sorted = sorted.filter((item) => {
+        const parsed = parseDate(item.date);
+        return parsed && parsed >= start && parsed <= end;
+      });
+    }
+
+    setFilteredData(sorted);
     setCurrentPage(1);
-  }, [id, startDate, endDate]);
+  }, [fund, tempStartDate, tempEndDate]);
 
-// ================= FILTER DATA =================
-const filteredData = useMemo(() => {
-  if (!fund?.data) return [];
-
-  return fund.data
-    .filter((item) => {
-      const itemDate = new Date(item.date);
-      return (
-        itemDate >= new Date(startDate) &&
-        itemDate <= new Date(endDate)
-      );
-    })
-    .sort((a, b) => new Date(b.date) - new Date(a.date)); 
-}, [fund, startDate, endDate]);
+  // ================= RESET =================
+  const handleReset = () => {
+    setTempStartDate("");
+    setTempEndDate("");
+    setCurrentPage(1); // 👈 Force pagination to page 1
+  };
 
   // ================= PAGINATION =================
   const totalRows = filteredData.length;
   const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
-
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  const currentData = filteredData.slice(startIndex, startIndex + rowsPerPage);
 
-  const currentData = filteredData.slice(startIndex, endIndex);
-
-  const latestNav = fund?.data?.[0];
+  const latestNav = filteredData[0] || null;
 
   // ================= RETURNS =================
   const returns = useMemo(() => {
     if (!fund?.data?.length) return {};
 
+    const sorted = [...fund.data].sort(
+      (a, b) => parseDate(b.date) - parseDate(a.date),
+    );
+
     const calculateReturn = (yrs) => {
       const targetDate = new Date();
       targetDate.setFullYear(targetDate.getFullYear() - yrs);
 
-      const pastEntry = fund.data.find(
-        (item) => new Date(item.date) <= targetDate
+      const pastEntry = sorted.find(
+        (item) => parseDate(item.date) <= targetDate,
       );
 
       if (!pastEntry) return "N/A";
 
-      const latest = parseFloat(fund.data[0].nav);
+      const latest = parseFloat(sorted[0].nav);
       const past = parseFloat(pastEntry.nav);
 
-      const percent = ((latest - past) / past) * 100;
-      return percent.toFixed(2) + "%";
+      return (((latest - past) / past) * 100).toFixed(2) + "%";
     };
 
     return {
@@ -133,69 +128,88 @@ const filteredData = useMemo(() => {
     };
   }, [fund]);
 
+  // ================= SIP CALCULATION =================
+  const futureValue = useMemo(() => {
+    if (!monthly || !years) return 0;
+
+    const n = years * 12;
+    const r = rate / 100 / 12;
+
+    if (rate === 0) return monthly * n;
+
+    const fv = monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+    return Math.round(fv);
+  }, [monthly, rate, years]);
+
+  const totalInvested = monthly * years * 12;
+  const estimatedGain = futureValue - totalInvested;
+
   // ================= TABLE DATA =================
-  const enhancedData = currentData?.map((item, index) => {
-  const currentNav = parseFloat(item.nav);
-  const prevItem = currentData[index + 1];
+  const enhancedData = currentData.map((item, index) => {
+    const nextItem = filteredData[startIndex + index + 1];
 
     let change = 0;
     let changePercent = 0;
 
-    if (prevItem) {
-      const prevNav = parseFloat(prevItem.nav);
+    if (nextItem) {
+      const currentNav = parseFloat(item.nav);
+      const prevNav = parseFloat(nextItem.nav);
+
       change = currentNav - prevNav;
       changePercent = (change / prevNav) * 100;
     }
-
-    let level = "MID";
-    if (change > 0) level = "UP";
-    if (change < 0) level = "DOWN";
 
     return {
       ...item,
       change,
       changePercent,
-      level,
+      level: change > 0 ? "UP" : change < 0 ? "DOWN" : "MID",
     };
   });
 
-  if (loading) {
+  if (loading) return <InvestSphereLoader />;
+
+  if (error)
     return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
-        Loading fund details...
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        {error}
       </div>
     );
-  }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <p className="text-red-500">{error}</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-4 bg-slate-800 text-white px-4 py-2 rounded-lg"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  // ================= RISK LEVEL =================
-const getRiskLevel = () => {
-  const type = fund?.meta?.scheme_type?.toLowerCase() || "";
-
-  if (type.includes("equity")) return "High Risk";
-  if (type.includes("debt")) return "Low Risk";
-
-  return "Moderate Risk";
-};
-
-
+  const getRiskLevel = () => {
+    const type = fund?.meta?.scheme_type?.toLowerCase() || "";
+    if (type.includes("equity")) return "High Risk";
+    if (type.includes("debt")) return "Low Risk";
+    return "Moderate Risk";
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* BACK BUTTON */}
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate("/sip")}
+            className="flex items-center gap-2 text-slate-600 hover:text-blue-600 transition font-medium"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to SIP List
+          </button>
+        </div>
+
         {/* HERO */}
         <div className="bg-white rounded-2xl shadow-md p-8">
           <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
@@ -282,15 +296,13 @@ const getRiskLevel = () => {
 
           {/* DATE FILTER UI */}
           <div className="mb-6 bg-slate-50 p-4 rounded-xl flex flex-col md:flex-row gap-4 md:items-end md:justify-between">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
               <div>
                 <label className="text-sm text-slate-500">Start Date</label>
                 <input
                   type="date"
-                  value={startDate}
-                  min={fiveYearsAgo.toISOString().split("T")[0]}
-                  max={endDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  value={tempStartDate}
+                  onChange={(e) => setTempStartDate(e.target.value)}
                   className="border p-2 rounded-lg mt-1"
                 />
               </div>
@@ -299,12 +311,20 @@ const getRiskLevel = () => {
                 <label className="text-sm text-slate-500">End Date</label>
                 <input
                   type="date"
-                  value={endDate}
-                  min={startDate}
-                  max={yesterday.toISOString().split("T")[0]}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  value={tempEndDate}
+                  onChange={(e) => setTempEndDate(e.target.value)}
                   className="border p-2 rounded-lg mt-1"
                 />
+              </div>
+
+              {/* Only Reset Button */}
+              <div className="mt-5 sm:mt-0">
+                <button
+                  onClick={handleReset}
+                  className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm hover:bg-slate-300 transition"
+                >
+                  Reset Data
+                </button>
               </div>
             </div>
 
@@ -337,34 +357,42 @@ const getRiskLevel = () => {
                     <td className="py-3">{item.date}</td>
                     <td className="py-3 font-medium">₹{item.nav}</td>
 
-                    <td className={`py-3 font-medium ${
-                      item.change > 0
-                        ? "text-green-600"
-                        : item.change < 0
-                        ? "text-red-500"
-                        : "text-slate-500"
-                    }`}>
+                    <td
+                      className={`py-3 font-medium ${
+                        item.change > 0
+                          ? "text-green-600"
+                          : item.change < 0
+                            ? "text-red-500"
+                            : "text-slate-500"
+                      }`}
+                    >
+                      {item.change > 0 && "+"}
                       {item.change.toFixed(2)}
                     </td>
 
-                    <td className={`py-3 ${
-                      item.changePercent > 0
-                        ? "text-green-600"
-                        : item.changePercent < 0
-                        ? "text-red-500"
-                        : "text-slate-500"
-                    }`}>
+                    <td
+                      className={`py-3 ${
+                        item.changePercent > 0
+                          ? "text-green-600"
+                          : item.changePercent < 0
+                            ? "text-red-500"
+                            : "text-slate-500"
+                      }`}
+                    >
+                      {item.changePercent > 0 && "+"}
                       {item.changePercent.toFixed(2)}%
                     </td>
 
                     <td className="py-3 text-center">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        item.level === "UP"
-                          ? "bg-green-100 text-green-700"
-                          : item.level === "DOWN"
-                          ? "bg-red-100 text-red-600"
-                          : "bg-slate-100 text-slate-600"
-                      }`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          item.level === "UP"
+                            ? "bg-green-100 text-green-700"
+                            : item.level === "DOWN"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
                         {item.level}
                       </span>
                     </td>
@@ -387,7 +415,7 @@ const getRiskLevel = () => {
 
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter(
-                  (page) => page >= currentPage - 2 && page <= currentPage + 2
+                  (page) => page >= currentPage - 2 && page <= currentPage + 2,
                 )
                 .map((pageNumber) => (
                   <button

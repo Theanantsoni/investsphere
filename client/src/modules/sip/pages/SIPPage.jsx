@@ -8,6 +8,7 @@ import SIPPagination from "../components/SIPPagination";
 import SIPHeroSection from "../components/SIPHeroSection";
 import SIPLoadingSkeleton from "../components/SIPLoadingSkeleton";
 import SIPStatsBar from "../components/SIPStatsBar";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 import {
   getFundMinSip,
@@ -16,15 +17,23 @@ import {
 } from "../utils/sipUtils";
 
 const SIPPage = () => {
-  const { sipData, loading } = useSIP();
+  const { sipData = [], loading } = useSIP(); // safety default
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [risk, setRisk] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [minSip, setMinSip] = useState("500");
+  const [initialLoad, setInitialLoad] = useState(true); // ✅ important
 
   const itemsPerPage = 9;
+
+  // ✅ Detect first load completion
+  useEffect(() => {
+    if (!loading && sipData.length > 0) {
+      setInitialLoad(false);
+    }
+  }, [loading, sipData]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -34,14 +43,11 @@ const SIPPage = () => {
   // 🔥 FIXED + OPTIMIZED FILTER LOGIC
   const filteredFunds = useMemo(() => {
     return sipData
-      // Search Filter
       .filter((fund) =>
         fund.schemeName
           ?.toLowerCase()
           .includes(search.toLowerCase())
       )
-
-      // Category Filter
       .filter((fund) => {
         const fundCategory = getFundCategory(
           fund.schemeName || ""
@@ -50,8 +56,6 @@ const SIPPage = () => {
           ? true
           : fundCategory === category;
       })
-
-      // Risk Filter
       .filter((fund) => {
         const fundRisk = getFundRisk(
           fund.schemeName || ""
@@ -60,17 +64,12 @@ const SIPPage = () => {
           ? true
           : fundRisk === risk;
       })
-
-      // ✅ CORRECT MIN SIP LOGIC
       .filter((fund) => {
         const fundMinSip = getFundMinSip(
           fund.schemeCode || 0
         );
-
-        // User SIP must be >= fund's required SIP
         return Number(minSip || 0) >= fundMinSip;
       });
-
   }, [sipData, search, category, risk, minSip]);
 
   const totalPages = Math.ceil(
@@ -81,6 +80,11 @@ const SIPPage = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // ✅ FIRST PAGE LOAD → FULL GIF LOADER (Strictly for initial mount)
+  if (initialLoad && loading && sipData.length === 0) {
+    return <InvestSphereLoader />;
+  }
 
   return (
     <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">

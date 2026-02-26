@@ -1,13 +1,20 @@
 import { useState } from "react";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const SIPCalculatorForm = ({ onCalculate }) => {
   const [monthlyInvestment, setMonthlyInvestment] = useState(5000);
   const [years, setYears] = useState(10);
   const [expectedReturn, setExpectedReturn] = useState(12);
   const [risk, setRisk] = useState("Medium");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true); // 👈 Loader start
+
+    await new Promise((resolve) => setTimeout(resolve, 1200)); 
+    // 👆 fake delay (agar API call ho to yeh remove kar dena)
 
     onCalculate({
       monthlyInvestment: Number(monthlyInvestment),
@@ -15,10 +22,15 @@ const SIPCalculatorForm = ({ onCalculate }) => {
       expectedReturn: Number(expectedReturn),
       risk,
     });
+
+    setLoading(false); // 👈 Loader stop
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10">
+    <div className="relative bg-white rounded-3xl shadow-xl border border-slate-200 p-10">
+      
+      {/* 👇 Loader Overlay */}
+      {loading && <InvestSphereLoader />}
 
       <h2 className="text-2xl font-bold text-slate-800 mb-8">
         SIP Investment Calculator
@@ -26,10 +38,8 @@ const SIPCalculatorForm = ({ onCalculate }) => {
 
       <form onSubmit={handleSubmit} className="space-y-8">
 
-        {/* GRID LAYOUT */}
         <div className="grid md:grid-cols-2 gap-8">
 
-          {/* Monthly Investment */}
           <div>
             <label className="block text-sm font-semibold text-slate-600 mb-2">
               Monthly Investment (₹)
@@ -44,7 +54,6 @@ const SIPCalculatorForm = ({ onCalculate }) => {
             />
           </div>
 
-          {/* Investment Duration */}
           <div>
             <label className="block text-sm font-semibold text-slate-600 mb-2">
               Investment Duration (Years)
@@ -59,7 +68,6 @@ const SIPCalculatorForm = ({ onCalculate }) => {
             />
           </div>
 
-          {/* Expected Return */}
           <div>
             <label className="block text-sm font-semibold text-slate-600 mb-2">
               Expected Annual Return (%)
@@ -74,7 +82,6 @@ const SIPCalculatorForm = ({ onCalculate }) => {
             />
           </div>
 
-          {/* Risk Preference */}
           <div>
             <label className="block text-sm font-semibold text-slate-600 mb-2">
               Risk Preference
@@ -92,13 +99,13 @@ const SIPCalculatorForm = ({ onCalculate }) => {
 
         </div>
 
-        {/* Button */}
         <div>
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-md transition-all duration-300"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 rounded-xl font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-60"
           >
-            Calculate Investment Growth
+            {loading ? "Calculating..." : "Calculate Investment Growth"}
           </button>
         </div>
 

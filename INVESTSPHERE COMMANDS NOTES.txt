@@ -1,112 +1,104 @@
-========================================================
-        INVESTSPHERE – PROJECT SETUP COMMANDS
-========================================================
+=========================================================
+INVESTSPHERE – INSTALLED PACKAGES & THEIR PURPOSE
+=========================================================
 
 
-========================================================
-STEP 1: CREATE MAIN PROJECT FOLDER
-========================================================
+=========================================================
+1️⃣ ROOT LEVEL
+=========================================================
 
-# Create main project directory
-mkdir investsphere
+npm i concurrently 
+-> Run frontend and backend simultaneously using a single command (npm run dev)
 
-# Go inside project folder
-cd investsphere
-
-
-========================================================
-STEP 2: FRONTEND (REACT) SETUP
-========================================================
-
-# Create React app (Vite – recommended)
-npm create vite@latest client
-
-# Select options:
-# Framework → React
-# Variant   → JavaScript / TypeScript (your choice)
-
-# Go to frontend folder
-cd client
-
-# Install dependencies
-npm install
-
-# Start frontend server
-npm run dev
-
-# Open in browser:
-# http://localhost:5173
-
-# Go back to main folder
-cd ..
+npm i -D nodemon 
+-> Automatically restart backend server during development when files change
 
 
-========================================================
-STEP 3: BACKEND (NODE + EXPRESS) SETUP
-========================================================
 
-# Create backend folder
-mkdir server
-cd server
+=========================================================
+2️⃣ CLIENT (React Frontend)
+=========================================================
 
-# Initialize Node project
-npm init -y
+npm i react 
+-> Core React library for building user interfaces
 
-# Install backend dependencies
-npm install express mongoose cors dotenv
+npm i react-dom 
+-> Render React components to the browser DOM
 
-# Install dev dependency
-npm install --save-dev nodemon
+npm i react-router-dom 
+-> Handle routing and navigation in Single Page Application
 
-# Create basic folder structure
-mkdir controllers routes models config middlewares utils
+npm i axios 
+-> Make HTTP requests to backend or external APIs
 
-# Create entry file
-touch index.js
+npm i recharts 
+-> Create charts and graphs (Stock charts, NAV charts, etc.)
 
-# Go back to root folder
-cd ..
+npm i lucide-react 
+-> Modern SVG icon library for clean UI icons
 
-
-========================================================
-STEP 4: COMMON FILES & CONFIG
-========================================================
-
-# Create environment file
-touch .env
-
-# Create README
-touch README.md
-
-# Project structure check
-
-tree
+npm i react-icons 
+-> Access multiple icon libraries in one package
 
 
-========================================================
-PROJECT STRUCTURE (AFTER SETUP)
-========================================================
 
-investsphere/
-│
-├── client/                # React Frontend
-│   ├── src/
-│   ├── public/
-│   └── package.json
-│
-├── server/                # Node + Express Backend
-│   ├── controllers/
-│   ├── routes/
-│   ├── models/
-│   ├── config/
-│   ├── middlewares/
-│   ├── utils/
-│   ├── index.js
-│   └── package.json
-│
-├── .env
-└── README.md
+-------------------------
+Client Dev Dependencies
+-------------------------
 
-========================================================
-END
-========================================================
+npm i -D vite 
+-> Fast development server and build tool
+
+npm i -D @vitejs/plugin-react 
+-> Enable React support in Vite
+
+npm i -D tailwindcss 
+-> Utility-first CSS framework for fast UI styling
+
+npm i -D postcss 
+-> Process CSS (used with Tailwind)
+
+npm i -D autoprefixer 
+-> Automatically add vendor prefixes to CSS
+
+npm i -D eslint 
+-> Linting and code quality checking
+
+npm i -D @eslint/js 
+-> Base ESLint configuration
+
+npm i -D eslint-plugin-react-hooks 
+-> Enforce proper React Hooks rules
+
+npm i -D eslint-plugin-react-refresh 
+-> Enable Fast Refresh support for React
+
+npm i -D globals 
+-> Provide global variable definitions for linting
+
+npm i -D @types/react 
+-> Type definitions for React (TypeScript support)
+
+npm i -D @types/react-dom 
+-> Type definitions for React DOM (TypeScript support)
+
+
+
+=========================================================
+3️⃣ SERVER (Node Backend)
+=========================================================
+
+npm i express 
+-> Backend framework for creating APIs and handling HTTP requests
+
+npm i mongoose 
+-> MongoDB object modeling and database interaction
+
+npm i cors 
+-> Allow cross-origin requests between frontend and backend
+
+npm i dotenv 
+-> Load environment variables from .env file
+
+npm i -D nodemon 
+-> Automatically restart backend during development

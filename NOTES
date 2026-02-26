@@ -1,12 +1,8 @@
 Notes: 
 
-<<<<<<< HEAD
-SIP Details Final with table calender - 26/02/26
-
+Back to SIP List and reset click page - 1 complete. 27-02-26
+IPO - types : NASDAQ , NYSE Complete.
+SIP details - start date and End date calender validation complete. With Reset button
+SIP / IPO / Market News - Page Loader - Investsphere complete
 SIP data fetch and display in card format.
 Market news data fetch and display in card format. 
-
-=======
-SIP data fetch and display in card format.
-Market news data fetch and display in card format. 
->>>>>>> b563a19ef24d2fc9878a8309e2465706054a4586
