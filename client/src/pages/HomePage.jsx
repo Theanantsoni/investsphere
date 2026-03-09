@@ -12,6 +12,8 @@ import {
 
 import { CartesianGrid } from "recharts";
 
+import MarketTicker from "../shared/components/MarketLiveBoard;";
+
 const Home = () => {
   const [coins, setCoins] = useState([]);
   const [indices, setIndices] = useState({});
@@ -74,24 +76,6 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const renderIndexCard = (title, data) => (
-    <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition transform hover:-translate-y-1">
-      <h4 className="text-gray-500 text-sm uppercase tracking-wide">{title}</h4>
-
-      <p className="text-3xl font-bold mt-2">
-        ₹ {data?.c ? Number(data.c).toLocaleString() : "Fetching..."}
-      </p>
-
-      <p
-        className={`mt-2 text-lg font-semibold ${
-          data?.dp >= 0 ? "text-green-600" : "text-red-500"
-        }`}
-      >
-        {data?.dp !== undefined ? data.dp.toFixed(2) + "%" : "--"}
-      </p>
-    </div>
-  );
-
   const fetchChartData = async () => {
     try {
       const res = await fetch(
@@ -108,6 +92,9 @@ const Home = () => {
 
   return (
     <div className="bg-gray-50">
+      {/* 🔥 LIVE MARKET TICKER */}
+      <MarketTicker />
+
       {/* ================= ENTERPRISE HERO ================= */}
       <section className="relative bg-gradient-to-b from-white to-slate-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-28 text-center">

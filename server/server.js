@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 require("dotenv").config();
+const WebSocket = require("ws");
 
 const app = express();
 app.use(cors({
@@ -104,7 +105,7 @@ app.get("/api/ipo/:type", async (req, res) => {
           symbol: ipo.symbol,
           name: ipo.name,
           exchange: ipo.exchange,
-          type: ipo.exchange,   
+          type: ipo.exchange,
           price: ipo.price || "N/A",
           numberOfShares: ipo.numberOfShares || 0,
           totalSharesValue: ipo.totalSharesValue || 0,
@@ -398,18 +399,6 @@ app.get("/api/sip", async (req, res) => {
   }
 });
 
-// SIP Detail Route
-app.get("/api/sip/:id", async (req, res) => {
-  try {
-    const response = await axios.get(
-      `https://api.mfapi.in/mf/${req.params.id}`
-    );
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch fund details" });
-  }
-});
-
 // ============================================
 // 📰 MARKET NEWS ROUTE (GNEWS)
 // ============================================
@@ -516,8 +505,341 @@ app.get("/api/sip/:id", async (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-  console.log(`🚀 Running on http://localhost:${PORT}`);
+let cachedTicker = null;
+let lastTickerFetch = 0;
+
+// ============================================
+// LIVE TICKER ROUTE (15 STOCKS, 60s CACHE)
+// ============================================
+
+app.get("/api/ticker", async (req, res) => {
+  try {
+    const now = Date.now();
+
+    // 60 sec cache
+    if (cachedTicker && now - lastTickerFetch < 60000) {
+      return res.json(cachedTicker);
+    }
+
+    const symbols = [
+      "AAPL", "MSFT", "GOOGL", "TSLA", "AMZN",
+      "META", "NVDA", "NFLX", "AMD", "INTC",
+      "UBER", "ORCL", "IBM", "BA", "JPM"
+    ];
+
+    const results = await Promise.all(
+      symbols.map(async (symbol) => {
+        try {
+          const response = await axios.get(
+            `https://finnhub.io/api/v1/quote`,
+            {
+              params: { symbol, token: FINN_KEY }
+            }
+          );
+
+          const data = response.data;
+
+          return {
+            symbol,
+            price: data.c ? data.c.toFixed(2) : "0.00",
+            percent: data.dp ? data.dp.toFixed(2) : "0.00"
+          };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const filtered = results.filter(Boolean);
+
+    cachedTicker = filtered;
+    lastTickerFetch = now;
+
+    res.json(filtered);
+
+  } catch (err) {
+    console.error("Ticker Error:", err.message);
+
+    if (cachedTicker) return res.json(cachedTicker);
+
+    res.json([]);
+  }
+});
+
+// ============================================
+
+
+/* ===========================================
+   ALL INDIAN STOCKS (REAL DATA)
+=========================================== */
+
+app.get("/api/stocks", async (req, res) => {
+
+  try {
+
+    console.log("STOCK API HIT");
+
+    const listResponse = await axios.get(
+      "https://archives.nseindia.com/content/equities/EQUITY_L.csv",
+      {
+        headers: {
+          "User-Agent": "Mozilla/5.0"
+        }
+      }
+    );
+
+    const rows = listResponse.data.split(/\r?\n/);
+
+    const stocks = rows
+      .slice(1)
+      .map(row => {
+
+        const cols = row.split(",");
+
+        return {
+          symbol: cols[0]?.trim(),
+          name: cols[1]?.trim()
+        };
+
+      })
+      .filter(s => s.symbol);
+
+    console.log("TOTAL NSE STOCKS:", stocks.length);
+
+    // limit for performance
+    const limited = stocks.slice(0, 50);
+
+    const prices = await Promise.all(
+
+      limited.map(async (stock) => {
+
+        try {
+
+          const symbol = `${stock.symbol}.NS`;
+
+          const response = await axios.get(
+            `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+            {
+              params: {
+                range: "1d",
+                interval: "1d"
+              },
+              headers: {
+                "User-Agent": "Mozilla/5.0"
+              }
+            }
+          );
+
+          const result = response.data.chart.result?.[0];
+
+          if (!result) return null;
+
+          const meta = result.meta;
+
+          const current = meta.regularMarketPrice;
+
+          const previous =
+            meta.chartPreviousClose || meta.previousClose;
+
+          const percent =
+            previous && current
+              ? ((current - previous) / previous) * 100
+              : 0;
+
+          return {
+            id: symbol,
+            symbol: stock.symbol,
+            name: stock.name,
+            price: current || 0,
+            change: percent || 0,
+            marketCap: "N/A"
+          };
+
+        } catch {
+          return null;
+        }
+
+      })
+
+    );
+
+    res.json({
+      stocks: prices.filter(Boolean),
+      totalPages: 1
+    });
+
+  } catch (error) {
+
+    console.log("Stock API Error:", error.message);
+
+    res.json({
+      stocks: [],
+      totalPages: 1
+    });
+
+  }
+
 });
 
 
+/* ===========================================
+   STOCK DETAIL API (STABLE)
+=========================================== */
+
+app.get("/api/stock/:symbol", async (req, res) => {
+
+  try {
+
+    const symbol = req.params.symbol.toUpperCase();
+
+    const yahooSymbol = symbol.includes(".NS")
+      ? symbol
+      : `${symbol}.NS`;
+
+    const response = await axios.get(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`,
+      {
+        params: {
+          range: "1d",
+          interval: "1d"
+        },
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          "Accept": "*/*"
+        },
+        timeout: 10000
+      }
+    );
+
+    const result = response.data?.chart?.result?.[0];
+
+    if (!result) {
+      return res.json({
+        symbol,
+        name: symbol,
+        price: 0,
+        change: 0
+      });
+    }
+
+    const meta = result.meta;
+
+    const current = meta.regularMarketPrice || 0;
+
+    const previous =
+      meta.chartPreviousClose ||
+      meta.previousClose ||
+      0;
+
+    const change =
+      previous > 0
+        ? ((current - previous) / previous) * 100
+        : 0;
+
+    res.json({
+
+      symbol,
+
+      name:
+        meta.longName ||
+        meta.shortName ||
+        symbol,
+
+      price: Number(current.toFixed(2)),
+
+      change: Number(change.toFixed(2)),
+
+      marketCap: meta.marketCap || 0,
+
+      volume: meta.regularMarketVolume || 0,
+
+      pe: null,
+
+      eps: null,
+
+      high52: meta.fiftyTwoWeekHigh || null,
+
+      low52: meta.fiftyTwoWeekLow || null,
+
+      dividend: null,
+
+      sector: "N/A",
+
+      description:
+        "Company overview coming soon.",
+
+      return1d: Number(change.toFixed(2)),
+
+      return1m: null,
+
+      return1y: null,
+
+      return5y: null
+
+    });
+
+  } catch (error) {
+
+    console.log("Stock detail error:", error.message);
+
+    res.json({
+      error: "Failed to fetch stock"
+    });
+
+  }
+
+});
+
+// ============================================
+
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Running on http://localhost:${PORT}`);
+});
+
+const wss = new WebSocket.Server({ server });
+
+wss.on("connection", (ws) => {
+  console.log("Client connected");
+
+  const socket = new WebSocket(
+    `wss://ws.finnhub.io?token=${FINN_KEY}`
+  );
+
+  socket.on("open", () => {
+    const symbols = [
+      "AAPL",
+      "MSFT",
+      "TSLA",
+      "AMZN",
+      "RELIANCE.NS",
+      "TCS.NS",
+      "INFY.NS",
+      "BINANCE:BTCUSDT"
+    ];
+
+    symbols.forEach(symbol => {
+      socket.send(JSON.stringify({ type: "subscribe", symbol }));
+    });
+  });
+
+  socket.on("message", (data) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(data.toString());
+    }
+  });
+
+  socket.on("error", (err) => {
+    console.log("Finnhub WS error:", err.message);
+  });
+
+  ws.on("close", () => {
+    console.log("Client disconnected");
+
+    // ✅ SAFE CLOSE
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.terminate();  // use terminate instead of close
+    }
+  });
+
+  ws.on("error", () => { });
+});
