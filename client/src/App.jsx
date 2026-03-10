@@ -24,10 +24,20 @@ import StockDetailPage from "./modules/stock/pages/StockDetailPage";
 
 import MarketNewsPage from "./modules/marketNews/pages/MarketNewsPage";
 
+/* ================= AUTH PAGES ================= */
+
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ================= AUTH ROUTES ================= */}
+
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
         {/* ================= MAIN LAYOUT ================= */}
 
         <Route path="/" element={<MainLayout />}>
@@ -39,7 +49,7 @@ function App() {
 
           <Route path="stock">
             <Route index element={<StockPage />} />
-           <Route path=":symbol" element={<StockDetailPage />} />
+            <Route path=":symbol" element={<StockDetailPage />} />
           </Route>
 
           {/* ================= IPO ROUTES ================= */}

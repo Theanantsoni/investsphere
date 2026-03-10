@@ -3,8 +3,99 @@ const cors = require("cors");
 const axios = require("axios");
 require("dotenv").config();
 const WebSocket = require("ws");
+const mongoose = require("mongoose");
 
 const app = express();
+
+app.use(express.json());
+
+// ============================================
+// MONGODB CONNECTION
+// ============================================
+
+mongoose.connect(process.env.MONGO_URI)
+.then(() => {
+  console.log("✅ MongoDB Atlas Connected");
+})
+.catch((err) => {
+  console.log("❌ MongoDB Error:", err.message);
+});
+
+// ============================================
+// USER MODEL
+// ============================================
+
+const userSchema = new mongoose.Schema(
+{
+  name: String,
+  email: {
+    type: String,
+    unique: true
+  },
+  phone: String,
+  country: String,
+  state: String,
+  pan: String,
+  dob: Date
+},
+{
+  timestamps: true
+}
+);
+
+const User = mongoose.model("User", userSchema);
+
+// ============================================
+// REGISTER USER
+// ============================================
+
+app.post("/api/register", async (req, res) => {
+
+  try {
+
+    const { name, email, phone, country, state, pan, dob } = req.body;
+
+    if (!name || !email || !phone || !country || !state || !pan || !dob) {
+      return res.status(400).json({
+        message: "Please fill all fields"
+      });
+    }
+
+    const existing = await User.findOne({ email });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "User already exists"
+      });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      country,
+      state,
+      pan,
+      dob
+    });
+
+    res.json({
+      success: true,
+      user
+    });
+
+  } catch (error) {
+
+    console.log("Register error:", error.message);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
+
+});
+
 app.use(cors({
   origin: "http://localhost:5173",
 }));
