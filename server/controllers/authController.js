@@ -1,21 +1,26 @@
 const User = require("../models/User");
 
+// ============================================
+// REGISTER USER
+// ============================================
+
 const registerUser = async (req, res) => {
+
   try {
 
     const { name, email, phone, country, state, pan, dob } = req.body;
 
     if (!name || !email || !phone || !country || !state || !pan || !dob) {
       return res.status(400).json({
-        message: "All fields are required",
+        message: "Please fill all fields"
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existing = await User.findOne({ email });
 
-    if (existingUser) {
+    if (existing) {
       return res.status(400).json({
-        message: "User already exists",
+        message: "User already exists"
       });
     }
 
@@ -26,23 +31,26 @@ const registerUser = async (req, res) => {
       country,
       state,
       pan,
-      dob,
+      dob
     });
 
-    res.status(201).json({
+    res.json({
       success: true,
-      user,
+      user
     });
 
   } catch (error) {
 
+    console.log("Register error:", error.message);
+
     res.status(500).json({
-      message: "Server Error",
+      message: "Server error"
     });
 
   }
+
 };
 
 module.exports = {
-  registerUser,
+  registerUser
 };

@@ -1,5 +1,6 @@
 Notes: 
 
+server folder different route and controllers complete. Client side working proper with all API data - 11-03-26
 Login and register page create -> After server.js to different routes and controllers file and folder in server
 Stock and Stock Details page complete - 10-03-26
 
@@ -12,3 +13,36 @@ Market news data fetch and display in card format.
 
 
 ------------------ 
+
+
+Routes for UI Check : 
+
+http://localhost:5000
+
+http://localhost:5000/api/register
+
+http://localhost:5000/api/ipo/upcoming
+http://localhost:5000/api/ipo/ongoing
+http://localhost:5000/api/ipo/closed
+
+http://localhost:5000/api/stocks
+http://localhost:5000/api/stocks/RELIANCE
+
+http://localhost:5000/api/sip
+http://localhost:5000/api/sip/119551
+
+http://localhost:5000/api/crypto
+
+http://localhost:5000/api/market
+http://localhost:5000/api/market/history?symbol=^NSEI&days=7
+http://localhost:5000/api/market/ticker
+
+http://localhost:5000/api/news
+http://localhost:5000/api/news?category=market&page=1
+
+http://localhost:5000/api/ticker
+http://localhost:5000/api/market-history?symbol=^NSEI&days=7
+http://localhost:5000/api/stock/RELIANCE
+http://localhost:5000/api/market-news?category=market&page=1
+
+ws://localhost:5000
