@@ -2,17 +2,11 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-const app = express();
-
-app.use(express.json());
-
-app.use(cors({
-  origin: "http://localhost:5173",
-}));
-
 // =============================
-// ROUTES
+// IMPORTS
 // =============================
+
+const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
 const ipoRoutes = require("./routes/ipoRoutes");
@@ -22,7 +16,6 @@ const cryptoRoutes = require("./routes/cryptoRoutes");
 const marketRoutes = require("./routes/marketRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 
-// Controllers (for backward compatibility routes)
 const {
   getTicker,
   getMarketHistory
@@ -31,7 +24,36 @@ const {
 const { getStockDetail } = require("./controllers/stockController");
 const { getMarketNews } = require("./controllers/newsController");
 
-// Main routes
+const initWebSocket = require("./services/websocketService");
+
+// =============================
+// APP INIT
+// =============================
+
+const app = express();
+
+// =============================
+// DATABASE
+// =============================
+
+connectDB();
+
+// =============================
+// MIDDLEWARE
+// =============================
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
+
+app.use(express.json());
+
+// =============================
+// ROUTES
+// =============================
+
+// Main API routes
 app.use("/api", authRoutes);
 app.use("/api/ipo", ipoRoutes);
 app.use("/api/stocks", stockRoutes);
@@ -51,6 +73,32 @@ app.get("/api/stock/:symbol", getStockDetail);
 app.get("/api/market-news", getMarketNews);
 
 // =============================
+// ROOT ROUTE
+// =============================
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "InvestSphere API Running 🚀"
+  });
+});
+
+// =============================
+// ERROR HANDLER
+// =============================
+
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err.message);
+
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error"
+  });
+});
+
+// =============================
+// SERVER START
+// =============================
 
 const PORT = process.env.PORT || 5000;
 
@@ -61,7 +109,5 @@ const server = app.listen(PORT, () => {
 // =============================
 // WEBSOCKET
 // =============================
-
-const initWebSocket = require("./services/websocketService");
 
 initWebSocket(server);
