@@ -233,10 +233,104 @@ const verifyRegisterOTP = async (req, res) => {
 
 
 // =======================================================
+// LOGIN USER
+// =======================================================
+
+const loginUser = async (req, res) => {
+
+  try {
+
+    const { email, password } = req.body;
+
+    // ==========================
+    // BASIC VALIDATION
+    // ==========================
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter email and password"
+      });
+    }
+
+    const emailRegex =
+      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter valid email address"
+      });
+    }
+
+    // ==========================
+    // FIND USER
+    // ==========================
+
+    const user = await Register.findOne({
+      email,
+      verified: true
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Invalid email and password. Enter valid email and password."
+      });
+    }
+
+    // ==========================
+    // PASSWORD CHECK
+    // ==========================
+
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Invalid email and password. Enter valid email and password."
+      });
+    }
+
+    // ==========================
+    // SUCCESS
+    // ==========================
+
+    return res.json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+
+    console.error("Login error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Login failed"
+    });
+
+  }
+
+};
+
+
+// =======================================================
 // EXPORT
 // =======================================================
 
 module.exports = {
   sendRegisterOTP,
-  verifyRegisterOTP
+  verifyRegisterOTP,
+  loginUser
 };

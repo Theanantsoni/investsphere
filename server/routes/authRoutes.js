@@ -2,7 +2,8 @@ const express = require("express");
 
 const {
   sendRegisterOTP,
-  verifyRegisterOTP
+  verifyRegisterOTP,
+  loginUser
 } = require("../controllers/authController");
 
 const router = express.Router();
@@ -30,6 +31,16 @@ router.post(
 router.post(
   "/register/verify-otp",
   verifyRegisterOTP
+);
+
+
+// --------------------------------------
+// LOGIN USER
+// --------------------------------------
+
+router.post(
+  "/login",
+  loginUser
 );
 
 
