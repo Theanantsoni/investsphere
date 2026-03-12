@@ -1,0 +1,36 @@
+import { Trash2 } from "lucide-react";
+
+const StockWatchlist = ({ data, removeWatchlist }) => {
+  if (data.length === 0) {
+    return (
+      <p className="text-gray-500 text-center py-20">No Stocks in Watchlist</p>
+    );
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6">
+      {data.map((stock) => (
+        <div
+          key={stock._id}
+          className="bg-white border rounded-xl p-6 shadow-sm hover:shadow-xl transition flex justify-between items-center"
+        >
+          <div>
+            <p className="font-semibold text-lg">{stock.itemName}</p>
+
+            <p className="text-gray-400 text-sm">Symbol: {stock.itemCode}</p>
+          </div>
+
+          <button
+            onClick={() => removeWatchlist(stock.itemCode)}
+            className="text-red-500 flex items-center gap-2 hover:text-red-600"
+          >
+            <Trash2 size={18} />
+            Remove
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default StockWatchlist;

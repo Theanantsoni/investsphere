@@ -6,6 +6,7 @@ import {
   BarChart3,
   Landmark,
   Newspaper,
+  Star,
   Menu,
   X,
   LogIn,
@@ -15,108 +16,127 @@ import {
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
+  /* ================= CHECK LOGIN ================= */
+
   useEffect(() => {
-    const user = localStorage.getItem("investsphere_user");
-    if (user) setIsLoggedIn(true);
+    const storedUser = localStorage.getItem("investsphere_user");
+
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   const logout = () => {
     localStorage.removeItem("investsphere_user");
-    setIsLoggedIn(false);
+    setUser(null);
     navigate("/login");
   };
+
+  /* ================= NAV ITEMS ================= */
 
   const navItems = [
     { name: "Home", path: "/", icon: <Home size={18} /> },
     { name: "SIP", path: "/sip", icon: <TrendingUp size={18} /> },
     { name: "Stocks", path: "/stock", icon: <BarChart3 size={18} /> },
     { name: "IPO", path: "/ipo", icon: <Landmark size={18} /> },
-    { name: "Market News", path: "/market-news", icon: <Newspaper size={18} /> },
+    { name: "Watchlist", path: "/watchlist", icon: <Star size={18} /> },
+    {
+      name: "Market News",
+      path: "/market-news",
+      icon: <Newspaper size={18} />,
+    },
   ];
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 sticky top-0 z-50">
-
-      {/* ================= CONTAINER ================= */}
-
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
-
         {/* ================= LOGO ================= */}
 
-        <Link to="/" className="flex items-center gap-3">
-
+        <Link to="/" className="flex items-center gap-3 group">
           <img
             src="/Images/7.png"
             alt="InvestSphere Logo"
-            className="w-11 h-11 md:w-12 md:h-12 object-contain"
+            className="w-11 h-11 md:w-12 md:h-12 object-contain group-hover:scale-105 transition"
           />
 
-          <span className="text-xl md:text-2xl font-bold text-gray-800 tracking-wide">
+          <span className="text-xl md:text-2xl font-bold tracking-wide text-gray-800">
             Invest<span className="text-blue-600">Sphere</span>
           </span>
-
         </Link>
 
         {/* ================= DESKTOP NAV ================= */}
 
-        <div className="hidden md:flex items-center gap-8 font-medium text-gray-700">
-
+        <div className="hidden md:flex items-center gap-8 text-gray-700 font-medium">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-2 transition duration-200 ${
-                  isActive
-                    ? "text-blue-600 border-b-2 border-blue-600 pb-1"
-                    : "hover:text-blue-600"
+                `relative flex items-center gap-2 transition duration-300 group ${
+                  isActive ? "text-blue-600" : "hover:text-blue-600"
                 }`
               }
             >
-              {item.icon}
+              <span className="group-hover:scale-110 transition">
+                {item.icon}
+              </span>
+
               {item.name}
+
+              {/* animated underline */}
+
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </NavLink>
           ))}
-
         </div>
 
-        {/* ================= AUTH BUTTON ================= */}
+        {/* ================= AUTH AREA ================= */}
 
-        <div className="hidden md:flex items-center">
+        <div className="hidden md:flex items-center gap-6">
+          {user ? (
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-2 text-gray-700 font-medium">
+                <User size={18} />
 
-          {!isLoggedIn ? (
+                <span>
+                  Welcome,{" "}
+                  <span className="text-blue-600 font-semibold">
+                    {user.name}
+                  </span>
+                </span>
+              </div>
+
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition shadow-sm hover:scale-[1.03] active:scale-95"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
+          ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm text-sm font-medium"
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm hover:scale-[1.03] active:scale-95"
             >
               <LogIn size={16} />
               Login
             </Link>
-          ) : (
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition shadow-sm text-sm font-medium"
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
           )}
-
         </div>
 
         {/* ================= MOBILE MENU BUTTON ================= */}
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-gray-700"
+          className="md:hidden text-gray-700 hover:scale-110 transition"
         >
           {isOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
-
       </div>
 
       {/* ================= MOBILE MENU ================= */}
@@ -126,21 +146,15 @@ const Navbar = () => {
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-
         <div className="flex justify-between items-center p-5 border-b">
-
-          <span className="font-bold text-lg">
-            Menu
-          </span>
+          <span className="font-bold text-lg">Menu</span>
 
           <button onClick={() => setIsOpen(false)}>
             <X size={24} />
           </button>
-
         </div>
 
         <div className="flex flex-col gap-6 p-6">
-
           {navItems.map((item) => (
             <NavLink
               key={item.name}
@@ -162,8 +176,15 @@ const Navbar = () => {
           {/* MOBILE AUTH */}
 
           <div className="border-t pt-5">
-
-            {!isLoggedIn ? (
+            {user ? (
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition w-full"
+              >
+                <LogOut size={18} />
+                Logout
+              </button>
+            ) : (
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
@@ -172,20 +193,9 @@ const Navbar = () => {
                 <LogIn size={18} />
                 Login
               </Link>
-            ) : (
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition w-full"
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
             )}
-
           </div>
-
         </div>
-
       </div>
 
       {/* ================= OVERLAY ================= */}
@@ -196,7 +206,6 @@ const Navbar = () => {
           onClick={() => setIsOpen(false)}
         />
       )}
-
     </nav>
   );
 };

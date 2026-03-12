@@ -17,6 +17,7 @@ const sipRoutes = require("./routes/sipRoutes");
 const cryptoRoutes = require("./routes/cryptoRoutes");
 const marketRoutes = require("./routes/marketRoutes");
 const newsRoutes = require("./routes/newsRoutes");
+const watchlistRoutes = require("./routes/watchlistRoutes");
 
 // Controllers (Backward compatibility)
 const {
@@ -86,6 +87,9 @@ app.use("/api/market", marketRoutes);
 
 // News
 app.use("/api/news", newsRoutes);
+
+// ⭐ WATCHLIST
+app.use("/api/watchlist", watchlistRoutes);
 
 
 // ======================================================

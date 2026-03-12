@@ -1,7 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import MainLayout from "./shared/layout/MainLayout";
 
+/* ================= HOME ================= */
+
 import HomePage from "./pages/HomePage";
+
+/* ================= AUTH PAGES ================= */
+
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 /* ================= IPO PAGES ================= */
 
@@ -24,15 +32,15 @@ import StockDetailPage from "./modules/stock/pages/StockDetailPage";
 
 import MarketNewsPage from "./modules/marketNews/pages/MarketNewsPage";
 
-/* ================= AUTH PAGES ================= */
+/* ================= WATCHLIST PAGE ================= */
 
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import WatchlistPage from "./modules/watchlist/pages/WatchlistPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+
         {/* ================= AUTH ROUTES ================= */}
 
         <Route path="/login" element={<LoginPage />} />
@@ -41,6 +49,7 @@ function App() {
         {/* ================= MAIN LAYOUT ================= */}
 
         <Route path="/" element={<MainLayout />}>
+
           {/* ================= HOME ================= */}
 
           <Route index element={<HomePage />} />
@@ -52,6 +61,14 @@ function App() {
             <Route path=":symbol" element={<StockDetailPage />} />
           </Route>
 
+          {/* ================= SIP ROUTES ================= */}
+
+          <Route path="sip">
+            <Route index element={<SIPPage />} />
+            <Route path="planner" element={<SIPPlannerPage />} />
+            <Route path=":id" element={<SIPDetailPage />} />
+          </Route>
+
           {/* ================= IPO ROUTES ================= */}
 
           <Route path="ipo" element={<IPOPage />} />
@@ -61,22 +78,20 @@ function App() {
             element={<IPOApplicationProcessPage />}
           />
 
-          {/* ================= SIP ROUTES ================= */}
-
-          <Route path="sip">
-            <Route index element={<SIPPage />} />
-            <Route path="planner" element={<SIPPlannerPage />} />
-            <Route path=":id" element={<SIPDetailPage />} />
-          </Route>
-
           {/* ================= MARKET NEWS ================= */}
 
           <Route path="market-news" element={<MarketNewsPage />} />
+
+          {/* ================= WATCHLIST ================= */}
+
+          <Route path="watchlist" element={<WatchlistPage />} />
+
         </Route>
 
         {/* ================= OUTSIDE LAYOUT ================= */}
 
         <Route path="ipo/apply/:symbol" element={<IPOApplyPage />} />
+
       </Routes>
     </BrowserRouter>
   );

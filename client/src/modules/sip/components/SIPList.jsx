@@ -1,18 +1,16 @@
 import SIPCard from "./SIPCard";
 
-const SIPList = ({ funds }) => {
-  if (!funds.length) {
-    return (
-      <div className="text-center text-gray-400 mt-10">
-        No SIP Funds Found
-      </div>
-    );
-  }
-
+const SIPList = ({ funds, watchlist, setWatchlist, user }) => {
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {funds.map((fund) => (
-        <SIPCard key={fund.schemeCode} fund={fund} />
+        <SIPCard
+          key={fund.schemeCode || fund.scheme_code}
+          fund={fund}
+          watchlist={watchlist}
+          setWatchlist={setWatchlist}
+          user={user}
+        />
       ))}
     </div>
   );
