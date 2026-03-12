@@ -20,6 +20,7 @@ const WatchlistPage = () => {
 
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
+
       setUser(parsed);
 
       fetchWatchlist(parsed.email);
@@ -63,11 +64,13 @@ const WatchlistPage = () => {
     }
   };
 
+  /* ================= SPLIT TYPES ================= */
+
   const stock = watchlist.filter((item) => item.type === "stock");
   const sip = watchlist.filter((item) => item.type === "sip");
   const ipo = watchlist.filter((item) => item.type === "ipo");
 
-  /* ================= NOT LOGGED IN UI ================= */
+  /* ================= LOGIN REQUIRED ================= */
 
   if (!user) {
     return (
@@ -83,20 +86,6 @@ const WatchlistPage = () => {
             Please login to access your personalised watchlist.
           </p>
 
-          {/* FEATURES */}
-
-          <div className="text-left bg-gray-50 border rounded-xl p-5 mb-6 space-y-2 text-sm">
-            <p className="font-semibold text-gray-700 mb-2">
-              What you can do after login:
-            </p>
-
-            <p>⭐ Save favourite Stocks</p>
-            <p>📈 Track SIP Mutual Funds</p>
-            <p>🏛 Follow Upcoming IPOs</p>
-            <p>⚡ Quick access to investments</p>
-            <p>🔔 Monitor market opportunities</p>
-          </div>
-
           <Link
             to="/login"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition"
@@ -108,7 +97,7 @@ const WatchlistPage = () => {
     );
   }
 
-  /* ================= MAIN PAGE ================= */
+  /* ================= UI ================= */
 
   return (
     <div className="bg-gray-50 min-h-screen">
