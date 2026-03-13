@@ -2,14 +2,14 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
-
-// ======================================================
-// IMPORTS
-// ======================================================
+/* ======================================================
+   IMPORTS
+====================================================== */
 
 const connectDB = require("./config/db");
 
-// Routes
+/* ================= ROUTES ================= */
+
 const authRoutes = require("./routes/authRoutes");
 const ipoRoutes = require("./routes/ipoRoutes");
 const stockRoutes = require("./routes/stockRoutes");
@@ -18,8 +18,11 @@ const cryptoRoutes = require("./routes/cryptoRoutes");
 const marketRoutes = require("./routes/marketRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const watchlistRoutes = require("./routes/watchlistRoutes");
+const userRoutes = require("./routes/userRoutes"); 
+const reportRoutes = require("./routes/reportRoutes");
 
-// Controllers (Backward compatibility)
+/* ================= CONTROLLERS (Backward compatibility) ================= */
+
 const {
   getTicker,
   getMarketHistory
@@ -29,29 +32,29 @@ const { getStockDetail } = require("./controllers/stockController");
 
 const { getMarketNews } = require("./controllers/newsController");
 
-// Services
+/* ================= SERVICES ================= */
+
 const initWebSocket = require("./services/websocketService");
 
 
-// ======================================================
-// APP INITIALIZATION
-// ======================================================
+/* ======================================================
+   APP INITIALIZATION
+====================================================== */
 
 const app = express();
 
 
-// ======================================================
-// DATABASE CONNECTION
-// ======================================================
+/* ======================================================
+   DATABASE CONNECTION
+====================================================== */
 
 connectDB();
 
 
-// ======================================================
-// MIDDLEWARE
-// ======================================================
+/* ======================================================
+   MIDDLEWARE
+====================================================== */
 
-// CORS
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -59,44 +62,57 @@ app.use(
   })
 );
 
-// JSON Parser
 app.use(express.json());
 
 
-// ======================================================
-// API ROUTES
-// ======================================================
+/* ======================================================
+   API ROUTES
+====================================================== */
 
-// Authentication
+/* ================= AUTH ================= */
+
 app.use("/api", authRoutes);
 
-// IPO
+/* ================= IPO ================= */
+
 app.use("/api/ipo", ipoRoutes);
 
-// Stocks
+/* ================= STOCK ================= */
+
 app.use("/api/stocks", stockRoutes);
 
-// SIP
+/* ================= SIP ================= */
+
 app.use("/api/sip", sipRoutes);
 
-// Crypto
+/* ================= CRYPTO ================= */
+
 app.use("/api/crypto", cryptoRoutes);
 
-// Market
+/* ================= MARKET ================= */
+
 app.use("/api/market", marketRoutes);
 
-// News
+/* ================= NEWS ================= */
+
 app.use("/api/news", newsRoutes);
 
-// ⭐ WATCHLIST
+/* ================= WATCHLIST ================= */
+
 app.use("/api/watchlist", watchlistRoutes);
 
+/* ================= USER PROFILE ================= */
 
-// ======================================================
-// BACKWARD COMPATIBILITY ROUTES
-// ======================================================
+app.use("/api/users", userRoutes);
 
-// These exist for old frontend compatibility
+ /* ================= SEND REPORT ================= */
+
+ app.use("/api/reports", reportRoutes);
+
+
+/* ======================================================
+   BACKWARD COMPATIBILITY ROUTES
+====================================================== */
 
 app.get("/api/ticker", getTicker);
 
@@ -107,9 +123,9 @@ app.get("/api/stock/:symbol", getStockDetail);
 app.get("/api/market-news", getMarketNews);
 
 
-// ======================================================
-// ROOT ROUTE
-// ======================================================
+/* ======================================================
+   ROOT ROUTE
+====================================================== */
 
 app.get("/", (req, res) => {
   res.json({
@@ -119,9 +135,9 @@ app.get("/", (req, res) => {
 });
 
 
-// ======================================================
-// GLOBAL ERROR HANDLER
-// ======================================================
+/* ======================================================
+   GLOBAL ERROR HANDLER
+====================================================== */
 
 app.use((err, req, res, next) => {
 
@@ -135,24 +151,24 @@ app.use((err, req, res, next) => {
 });
 
 
-// ======================================================
-// SERVER START
-// ======================================================
+/* ======================================================
+   SERVER START
+====================================================== */
 
 const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
 
   console.log("====================================");
-  console.log(`🚀 InvestSphere Server Running`);
+  console.log("🚀 InvestSphere Server Running");
   console.log(`🌐 http://localhost:${PORT}`);
   console.log("====================================");
 
 });
 
 
-// ======================================================
-// WEBSOCKET INITIALIZATION
-// ======================================================
+/* ======================================================
+   WEBSOCKET INITIALIZATION
+====================================================== */
 
 initWebSocket(server);

@@ -8,18 +8,16 @@ const {
     removeWatchlist,
 } = require("../controllers/watchlistController");
 
-/* ================= ROUTES ================= */
-
-/* ADD WATCHLIST */
+/* ================= ADD WATCHLIST ================= */
 
 router.post("/add", addToWatchlist);
 
-/* GET USER WATCHLIST */
+/* ================= GET USER WATCHLIST ================= */
 
 router.get("/:email", getWatchlist);
 
-/* REMOVE WATCHLIST */
+/* ================= REMOVE WATCHLIST ================= */
 
-router.delete("/:id", removeWatchlist);
+router.delete("/remove", removeWatchlist);
 
 module.exports = router;

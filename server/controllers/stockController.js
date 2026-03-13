@@ -31,7 +31,7 @@ const getStocks = async (req, res) => {
       })
       .filter(s => s.symbol);
 
-    const limited = stocks.slice(0, 50);
+    const limited = stocks.slice(0, 20);
 
     const prices = await Promise.all(
 

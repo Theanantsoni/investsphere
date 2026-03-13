@@ -79,20 +79,41 @@ exports.getWatchlist = async (req, res) => {
 
 exports.removeWatchlist = async (req, res) => {
     try {
-        const { id } = req.params;
 
-        await Watchlist.findByIdAndDelete(id);
+        const { email, itemCode } = req.body;
+
+        if (!email || !itemCode) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required fields",
+            });
+        }
+
+        const deleted = await Watchlist.findOneAndDelete({
+            email,
+            itemCode,
+        });
+
+        if (!deleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found",
+            });
+        }
 
         res.json({
             success: true,
             message: "Removed from watchlist",
         });
+
     } catch (error) {
+
         console.error("Watchlist Delete Error:", error);
 
         res.status(500).json({
             success: false,
             message: "Server error",
         });
+
     }
 };

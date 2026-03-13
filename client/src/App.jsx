@@ -36,11 +36,19 @@ import MarketNewsPage from "./modules/marketNews/pages/MarketNewsPage";
 
 import WatchlistPage from "./modules/watchlist/pages/WatchlistPage";
 
+/* ================= PROFILE PAGE ================= */
+
+import Profile from "./pages/Profile";
+
+/* ================= OPTIONAL FUTURE PAGES ================= */
+
+import Settings from "./pages/Settings";
+import SendReport from "./pages/SendReport";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* ================= AUTH ROUTES ================= */}
 
         <Route path="/login" element={<LoginPage />} />
@@ -49,10 +57,18 @@ function App() {
         {/* ================= MAIN LAYOUT ================= */}
 
         <Route path="/" element={<MainLayout />}>
-
           {/* ================= HOME ================= */}
 
           <Route index element={<HomePage />} />
+
+          {/* ================= PROFILE ================= */}
+
+          <Route path="profile" element={<Profile />} />
+
+          {/* ================= FUTURE ROUTES ================= */}
+
+          <Route path="settings" element={<Settings />} />
+          <Route path="send-report" element={<SendReport />} />
 
           {/* ================= STOCK ROUTES ================= */}
 
@@ -85,13 +101,11 @@ function App() {
           {/* ================= WATCHLIST ================= */}
 
           <Route path="watchlist" element={<WatchlistPage />} />
-
         </Route>
 
         {/* ================= OUTSIDE LAYOUT ================= */}
 
         <Route path="ipo/apply/:symbol" element={<IPOApplyPage />} />
-
       </Routes>
     </BrowserRouter>
   );

@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useState, useMemo } from "react";
+
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 import {
   getFundMinSip,
@@ -10,16 +12,56 @@ import {
 
 const SipWatchlist = ({ data, removeWatchlist }) => {
   const [page, setPage] = useState(1);
+  const [confirmPopup, setConfirmPopup] = useState(false);
+  const [selectedCode, setSelectedCode] = useState(null);
 
   const ITEMS_PER_PAGE = 6;
 
-  /* ================= EMPTY WATCHLIST ================= */
+  /* ================= LOADER ================= */
 
-  if (!data || data.length === 0) {
+  if (!data) {
     return (
-      <p className="text-gray-500 text-center py-20">
-        No SIP Funds in Watchlist
-      </p>
+      <div className="flex justify-center py-20">
+        <InvestSphereLoader />
+      </div>
+    );
+  }
+
+  /* ================= REMOVE CLICK ================= */
+
+  const handleRemoveClick = (code) => {
+    setSelectedCode(code);
+    setConfirmPopup(true);
+  };
+
+  /* ================= CONFIRM REMOVE ================= */
+
+  const confirmRemove = async () => {
+    if (!selectedCode) return;
+
+    try {
+      await removeWatchlist(selectedCode);
+    } catch (error) {
+      console.error("Remove error:", error);
+    }
+
+    setConfirmPopup(false);
+    setSelectedCode(null);
+  };
+
+  /* ================= EMPTY WATCHLIST CARD ================= */
+
+  if (data.length === 0) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="bg-white border rounded-2xl shadow-md p-10 text-center max-w-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">
+            No SIP Watchlist
+          </h2>
+
+          <p className="text-gray-500 text-sm">No watchlist SIP data found.</p>
+        </div>
+      </div>
     );
   }
 
@@ -31,8 +73,6 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
     const start = (page - 1) * ITEMS_PER_PAGE;
     return data.slice(start, start + ITEMS_PER_PAGE);
   }, [data, page]);
-
-  /* ================= UI ================= */
 
   return (
     <div>
@@ -118,8 +158,8 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
                 {/* REMOVE */}
 
                 <button
-                  onClick={() => removeWatchlist(schemeCode)}
-                  className="flex-1 border border-red-500 text-red-600 py-2.5 rounded-xl font-medium hover:bg-red-50 transition flex items-center justify-center gap-2 hover:scale-[1.03] active:scale-95"
+                  onClick={() => handleRemoveClick(schemeCode)}
+                  className="flex-1 border border-red-500 text-red-600 py-2.5 rounded-xl font-medium hover:bg-red-50 transition flex items-center justify-center gap-2 hover:scale-[1.03]"
                 >
                   <Trash2 size={18} />
                   Remove
@@ -129,7 +169,7 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
 
                 <Link
                   to={`/sip/${schemeCode}`}
-                  className="flex-1 text-center bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-medium transition hover:scale-[1.03] active:scale-95"
+                  className="flex-1 text-center bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-medium transition hover:scale-[1.03]"
                 >
                   View Details
                 </Link>
@@ -143,8 +183,6 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-10">
-          {/* PREV */}
-
           <button
             onClick={() => setPage((p) => Math.max(p - 1, 1))}
             disabled={page === 1}
@@ -152,8 +190,6 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
           >
             Prev
           </button>
-
-          {/* PAGE NUMBERS */}
 
           {[...Array(totalPages)].map((_, i) => {
             const pageNumber = i + 1;
@@ -173,8 +209,6 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
             );
           })}
 
-          {/* NEXT */}
-
           <button
             onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
             disabled={page === totalPages}
@@ -182,6 +216,43 @@ const SipWatchlist = ({ data, removeWatchlist }) => {
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* ================= CONFIRM REMOVE POPUP ================= */}
+
+      {confirmPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-[360px] p-6 relative text-center">
+            <button
+              onClick={() => setConfirmPopup(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-red-500"
+            >
+              <X size={18} />
+            </button>
+
+            <h2 className="text-lg font-semibold mb-3">Remove SIP Fund</h2>
+
+            <p className="text-gray-600 text-sm mb-6">
+              Are you sure you want to remove this fund from your watchlist?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setConfirmPopup(false)}
+                className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmRemove}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

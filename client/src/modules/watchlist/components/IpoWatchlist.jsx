@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
 const IpoWatchlist = ({ data, removeWatchlist }) => {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
+
+  const [confirmPopup, setConfirmPopup] = useState(false);
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
 
   const ITEMS_PER_PAGE = 3;
 
@@ -43,17 +47,11 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
     fetchIpos();
   }, []);
 
-  /* ================= EMPTY WATCHLIST ================= */
-
-  if (!data || data.length === 0) {
-    return (
-      <p className="text-gray-500 text-center py-20">No IPOs in Watchlist</p>
-    );
-  }
-
   /* ================= MATCH WATCHLIST ================= */
 
   const ipoData = useMemo(() => {
+    if (!data) return [];
+
     return data.map((item) => {
       const match = ipos.find(
         (ipo) =>
@@ -86,11 +84,51 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
     return ipoData.slice(start, start + ITEMS_PER_PAGE);
   }, [ipoData, page]);
 
-  /* ================= LOADING ================= */
+  /* ================= REMOVE CLICK ================= */
+
+  const handleRemoveClick = (symbol) => {
+    setSelectedSymbol(symbol);
+    setConfirmPopup(true);
+  };
+
+  /* ================= CONFIRM REMOVE ================= */
+
+  const confirmRemove = async () => {
+    if (!selectedSymbol) return;
+
+    try {
+      await removeWatchlist(selectedSymbol);
+    } catch (error) {
+      console.log("Remove error:", error);
+    }
+
+    setConfirmPopup(false);
+    setSelectedSymbol(null);
+  };
+
+  /* ================= LOADER ================= */
 
   if (loading) {
     return (
-      <p className="text-gray-400 text-center py-20">Loading IPO data...</p>
+      <div className="flex justify-center py-20">
+        <InvestSphereLoader />
+      </div>
+    );
+  }
+
+  /* ================= EMPTY ================= */
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="bg-white border rounded-2xl shadow-md p-10 text-center max-w-md">
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">
+            No IPO Watchlist
+          </h2>
+
+          <p className="text-gray-500 text-sm">No watchlist IPO data found.</p>
+        </div>
+      </div>
     );
   }
 
@@ -117,45 +155,25 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
 
               <div className="space-y-1 text-sm text-slate-700">
                 <p>
-                  <b>Symbol:</b> {ipo.symbol || "N/A"}
+                  <b>Symbol:</b> {ipo.symbol}
                 </p>
 
                 <p>
-                  <b>Exchange:</b> {ipo.exchange || "N/A"}
+                  <b>Open Date:</b> {ipo.openDate}
                 </p>
 
                 <p>
-                  <b>Open Date:</b> {ipo.openDate || "N/A"}
+                  <b>Close Date:</b> {ipo.closeDate}
                 </p>
 
                 <p>
-                  <b>Close Date:</b> {ipo.closeDate || "N/A"}
-                </p>
-
-                <p>
-                  <b>Issue Price:</b> {ipo.price || "N/A"}
-                </p>
-
-                <p>
-                  <b>Shares Offered:</b>{" "}
-                  {ipo.numberOfShares && ipo.numberOfShares > 0
-                    ? Number(ipo.numberOfShares).toLocaleString("en-IN")
-                    : "N/A"}
-                </p>
-
-                <p>
-                  <b>Total Value:</b>{" "}
-                  {ipo.totalSharesValue && ipo.totalSharesValue > 0
-                    ? `₹ ${Number(ipo.totalSharesValue).toLocaleString("en-IN")}`
-                    : "N/A"}
+                  <b>Issue Price:</b> {ipo.price}
                 </p>
               </div>
 
-              {/* STATUS */}
-
               <div className="mt-3">
                 <span
-                  className={`px-3 py-1 text-xs rounded-full font-semibold capitalize ${
+                  className={`px-3 py-1 text-xs rounded-full font-semibold ${
                     ipo.status === "ongoing"
                       ? "bg-green-100 text-green-700"
                       : ipo.status === "upcoming"
@@ -179,7 +197,7 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
               </button>
 
               <button
-                onClick={() => removeWatchlist(ipo.symbol)}
+                onClick={() => handleRemoveClick(ipo.symbol)}
                 className="flex items-center justify-center gap-2 border border-red-500 text-red-600 px-4 py-2.5 rounded-xl hover:bg-red-50 transition"
               >
                 <Trash2 size={18} />
@@ -194,45 +212,60 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
 
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2 mt-10">
-          {/* PREV */}
-
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
-          >
-            Prev
-          </button>
-
-          {/* PAGE NUMBERS */}
-
           {[...Array(totalPages)].map((_, i) => {
-            const pageNumber = i + 1;
+            const p = i + 1;
 
             return (
               <button
-                key={pageNumber}
-                onClick={() => setPage(pageNumber)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  page === pageNumber
-                    ? "bg-purple-600 text-white shadow"
+                key={p}
+                onClick={() => setPage(p)}
+                className={`px-4 py-2 rounded-lg text-sm ${
+                  page === p
+                    ? "bg-purple-600 text-white"
                     : "border hover:bg-gray-100"
                 }`}
               >
-                {pageNumber}
+                {p}
               </button>
             );
           })}
+        </div>
+      )}
 
-          {/* NEXT */}
+      {/* ================= CONFIRM POPUP ================= */}
 
-          <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-100"
-          >
-            Next
-          </button>
+      {confirmPopup && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl w-[360px] p-6 relative text-center">
+            <button
+              onClick={() => setConfirmPopup(false)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-red-500"
+            >
+              <X size={18} />
+            </button>
+
+            <h2 className="text-lg font-semibold mb-3">Remove IPO</h2>
+
+            <p className="text-gray-600 text-sm mb-6">
+              Are you sure you want to remove this IPO from your watchlist?
+            </p>
+
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setConfirmPopup(false)}
+                className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmRemove}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
