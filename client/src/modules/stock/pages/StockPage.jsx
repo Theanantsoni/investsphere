@@ -13,6 +13,7 @@ const StockPage = () => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [page, setPage] = useState(1);
+
   const [user, setUser] = useState(null);
   const [watchLoading, setWatchLoading] = useState(null);
 
@@ -20,6 +21,7 @@ const StockPage = () => {
 
   const [popup, setPopup] = useState({
     show: false,
+    title: "",
     message: "",
   });
 
@@ -54,6 +56,24 @@ const StockPage = () => {
     } catch (error) {
       console.log("Watchlist load error");
     }
+  };
+
+  /* ================= POPUP ================= */
+
+  const showPopup = (title, message) => {
+    setPopup({
+      show: true,
+      title,
+      message,
+    });
+  };
+
+  const closePopup = () => {
+    setPopup({
+      show: false,
+      title: "",
+      message: "",
+    });
   };
 
   /* ================= RESET PAGE ================= */
@@ -117,22 +137,36 @@ const StockPage = () => {
     return filteredStocks.slice(start, start + itemsPerPage);
   }, [filteredStocks, page]);
 
+  /* ================= NAVIGATE TO DETAILS ================= */
+
+  const handleStockClick = (symbol) => {
+    if (!user || !user.email) {
+      showPopup(
+        "Login Required",
+        "Please login to view detailed stock information.",
+      );
+      return;
+    }
+
+    navigate(`/stock/${symbol}`);
+  };
+
   /* ================= ADD WATCHLIST ================= */
 
   const handleWatchlist = async (stock) => {
-    if (!user) {
-      setPopup({
-        show: true,
-        message: "Please login first to add stock to watchlist",
-      });
+    if (!user || !user.email) {
+      showPopup(
+        "Login Required",
+        "Please login first to add this stock to your watchlist.",
+      );
       return;
     }
 
     if (watchlist.includes(stock.symbol)) {
-      setPopup({
-        show: true,
-        message: `${stock.symbol} already added to watchlist`,
-      });
+      showPopup(
+        "Already Added",
+        `${stock.symbol} is already in your watchlist.`,
+      );
       return;
     }
 
@@ -152,29 +186,19 @@ const StockPage = () => {
       if (response.data.success) {
         setWatchlist((prev) => [...prev, stock.symbol]);
 
-        setPopup({
-          show: true,
-          message: `${stock.symbol} added to watchlist successfully`,
-        });
+        showPopup(
+          "Success",
+          `${stock.symbol} has been added to your watchlist.`,
+        );
       }
     } catch (error) {
-      setPopup({
-        show: true,
-        message:
-          error.response?.data?.message || "Something went wrong. Try again",
-      });
+      showPopup(
+        "Error",
+        error.response?.data?.message || "Something went wrong. Try again.",
+      );
     } finally {
       setWatchLoading(null);
     }
-  };
-
-  /* ================= CLOSE POPUP ================= */
-
-  const closePopup = () => {
-    setPopup({
-      show: false,
-      message: "",
-    });
   };
 
   return (
@@ -266,7 +290,7 @@ const StockPage = () => {
                         className="border-t hover:bg-gray-50 transition"
                       >
                         <td
-                          onClick={() => navigate(`/stock/${stock.symbol}`)}
+                          onClick={() => handleStockClick(stock.symbol)}
                           className="px-6 py-5 cursor-pointer"
                         >
                           <p className="font-semibold">{stock.name}</p>
@@ -274,21 +298,21 @@ const StockPage = () => {
                         </td>
 
                         <td
-                          onClick={() => navigate(`/stock/${stock.symbol}`)}
+                          onClick={() => handleStockClick(stock.symbol)}
                           className="px-6 py-5 cursor-pointer"
                         >
                           {stock.symbol}
                         </td>
 
                         <td
-                          onClick={() => navigate(`/stock/${stock.symbol}`)}
+                          onClick={() => handleStockClick(stock.symbol)}
                           className="px-6 py-5 font-semibold cursor-pointer"
                         >
                           ₹{Number(stock.price || 0).toFixed(2)}
                         </td>
 
                         <td
-                          onClick={() => navigate(`/stock/${stock.symbol}`)}
+                          onClick={() => handleStockClick(stock.symbol)}
                           className={`px-6 py-5 font-semibold cursor-pointer ${
                             positive ? "text-green-600" : "text-red-600"
                           }`}
@@ -334,25 +358,33 @@ const StockPage = () => {
         )}
       </div>
 
-      {/* ================= POPUP MODAL ================= */}
+      {/* ================= PROFESSIONAL MODAL ================= */}
 
       {popup.show && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity duration-300">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 w-[92%] max-w-md text-center transform transition-all duration-300 scale-100 opacity-100">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Notification
-            </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 animate-fadeIn">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 flex items-center justify-center rounded-full bg-green-100 text-green-600 font-bold">
+                !
+              </div>
 
-            <p className="text-gray-600 mb-6 leading-relaxed">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {popup.title}
+              </h3>
+            </div>
+
+            <p className="text-gray-600 text-sm leading-relaxed">
               {popup.message}
             </p>
 
-            <button
-              onClick={closePopup}
-              className="bg-green-500 hover:bg-green-600 active:scale-95 text-white px-7 py-2.5 rounded-lg font-medium transition-all duration-200 shadow hover:shadow-md"
-            >
-              OK
-            </button>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closePopup}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl font-medium transition"
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
