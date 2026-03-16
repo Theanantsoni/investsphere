@@ -21,14 +21,8 @@ function maskEmail(email) {
   return `${firstThree}${masked}${lastTwo}@${domain}`;
 }
 
-/* ======================================================
-   COMPONENT
-====================================================== */
-
 function LoginPage() {
   const navigate = useNavigate();
-
-  /* ================= LOGIN STATE ================= */
 
   const [form, setForm] = useState({
     email: "",
@@ -37,20 +31,15 @@ function LoginPage() {
 
   const [loading, setLoading] = useState(false);
 
-  /* ================= POPUP STATES ================= */
-
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showFindEmail, setShowFindEmail] = useState(false);
 
   const [step, setStep] = useState("email");
 
-  /* ================= FORGOT STATES ================= */
-
   const [email, setEmail] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
 
   const [phone, setPhone] = useState("");
-
   const [otp, setOtp] = useState("");
 
   const [password, setPassword] = useState("");
@@ -80,33 +69,23 @@ function LoginPage() {
       const res = await axios.post("http://localhost:5000/api/login", form);
 
       if (res.data.success) {
-
         const userData = {
           id: res.data.user.id,
           name: res.data.user.name,
           email: res.data.user.email,
         };
 
-        localStorage.setItem(
-          "investsphere_user",
-          JSON.stringify(userData)
-        );
+        localStorage.setItem("investsphere_user", JSON.stringify(userData));
 
-        toast.success("Login successful", { duration: 3000 });
+        toast.success("Login successful");
 
         setTimeout(() => {
           navigate("/");
           window.location.reload();
-        }, 700);
+        }, 600);
       }
-
     } catch (err) {
-
-      toast.error(
-        err.response?.data?.message || "Server error",
-        { duration: 3000 }
-      );
-
+      toast.error(err.response?.data?.message || "Server error");
     }
 
     setLoading(false);
@@ -125,20 +104,15 @@ function LoginPage() {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/send-otp",
-        { email }
+        { email },
       );
 
       if (res.data.success) {
-        toast.success("OTP sent successfully");
+        toast.success("OTP sent");
         setStep("otp");
       }
-
     } catch (err) {
-
-      toast.error(
-        err.response?.data?.message || "Server error"
-      );
-
+      toast.error(err.response?.data?.message || "Server error");
     }
   };
 
@@ -153,23 +127,17 @@ function LoginPage() {
     }
 
     try {
-
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/verify-otp",
-        { email, otp }
+        { email, otp },
       );
 
       if (res.data.success) {
         toast.success("OTP verified");
         setStep("reset");
       }
-
     } catch (err) {
-
-      toast.error(
-        err.response?.data?.message || "Invalid OTP"
-      );
-
+      toast.error(err.response?.data?.message || "Invalid OTP");
     }
   };
 
@@ -178,7 +146,6 @@ function LoginPage() {
   ====================================================== */
 
   const resetPassword = async () => {
-
     if (!password || !confirmPassword) {
       toast.error("Fill all password fields");
       return;
@@ -190,31 +157,25 @@ function LoginPage() {
     }
 
     try {
-
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/reset",
-        { email, password }
+        { email, password },
       );
 
       if (res.data.success) {
-
-        const loginRes = await axios.post(
-          "http://localhost:5000/api/login",
-          { email, password }
-        );
+        const loginRes = await axios.post("http://localhost:5000/api/login", {
+          email,
+          password,
+        });
 
         if (loginRes.data.success) {
-
           const userData = {
             id: loginRes.data.user.id,
             name: loginRes.data.user.name,
             email: loginRes.data.user.email,
           };
 
-          localStorage.setItem(
-            "investsphere_user",
-            JSON.stringify(userData)
-          );
+          localStorage.setItem("investsphere_user", JSON.stringify(userData));
 
           toast.success("Password updated");
 
@@ -224,22 +185,16 @@ function LoginPage() {
           }, 700);
         }
       }
-
     } catch (err) {
-
-      toast.error(
-        err.response?.data?.message || "Server error"
-      );
-
+      toast.error(err.response?.data?.message || "Server error");
     }
   };
 
   /* ======================================================
-     PHONE INPUT VALIDATION
+     PHONE INPUT
   ====================================================== */
 
   const handlePhoneChange = (e) => {
-
     const value = e.target.value.replace(/\D/g, "");
 
     if (value.length <= 10) {
@@ -248,27 +203,20 @@ function LoginPage() {
   };
 
   /* ======================================================
-     FIND EMAIL BY MOBILE
+     FIND EMAIL
   ====================================================== */
 
   const findEmails = async () => {
-
     if (phone.length !== 10) {
       toast.error("Enter valid mobile number");
       return;
     }
 
     try {
-
       const res = await axios.post(
         "http://localhost:5000/api/find-email-by-mobile",
-        { phone }
+        { phone },
       );
-
-      if (!res.data.emails || res.data.emails.length === 0) {
-        toast.error("No email found");
-        return;
-      }
 
       const maskedList = res.data.emails.map((item) => ({
         email: item.email,
@@ -276,27 +224,16 @@ function LoginPage() {
       }));
 
       setEmails(maskedList);
-
     } catch (err) {
-
-      toast.error(
-        err.response?.data?.message || "Server error"
-      );
-
+      toast.error(err.response?.data?.message || "Server error");
     }
   };
 
-  /* ======================================================
-     UI
-  ====================================================== */
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6 relative">
-
       <Toaster position="top-right" />
 
-      <div className="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 border border-gray-100">
-
+      <div className="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 border">
         <h2 className="text-3xl font-bold text-center mb-2">
           Invest<span className="text-green-500">Sphere</span>
         </h2>
@@ -305,82 +242,190 @@ function LoginPage() {
           Sign in to your account
         </p>
 
-        {/* LOGIN FORM */}
-
         <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={form.email}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-lg"
+          />
 
-          <div>
-            <label className="text-sm text-gray-600">
-              Email
-            </label>
-
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-3 rounded-lg mt-1 focus:ring-2 focus:ring-green-400 outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-600">
-              Password
-            </label>
-
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-3 rounded-lg mt-1 focus:ring-2 focus:ring-green-400 outline-none"
-            />
-          </div>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-lg"
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-500 hover:bg-green-600 transition text-white py-3 rounded-lg font-semibold"
+            className="w-full bg-green-500 text-white py-3 rounded-lg"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
-
         </form>
 
-        {/* LINKS */}
-
         <div className="flex justify-between mt-4 text-sm">
-
           <button
             onClick={() => {
               setShowForgotPassword(true);
               setStep("email");
             }}
-            className="text-green-600 hover:underline"
+            className="text-green-600"
           >
             Forgot Password
           </button>
 
           <button
             onClick={() => setShowFindEmail(true)}
-            className="text-green-600 hover:underline"
+            className="text-green-600"
           >
             Forgot Email
           </button>
-
         </div>
 
         <p className="text-center mt-6 text-sm">
           Don't have account?
-          <Link
-            to="/register"
-            className="text-green-600 ml-1 hover:underline"
-          >
+          <Link to="/register" className="text-green-600 ml-1">
             Register
           </Link>
         </p>
-
       </div>
+
+      {/* FORGOT PASSWORD POPUP */}
+
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white w-[420px] p-6 rounded-xl space-y-4">
+            <h3 className="text-xl font-semibold text-center">
+              Reset Password
+            </h3>
+
+            {step === "email" && (
+              <>
+                <input
+                  placeholder="Enter email"
+                  value={maskedEmail || email}
+                  disabled={!!maskedEmail}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border p-3 rounded"
+                />
+
+                <button
+                  onClick={sendOTP}
+                  className="w-full bg-green-500 text-white p-3 rounded"
+                >
+                  Send OTP
+                </button>
+              </>
+            )}
+
+            {step === "otp" && (
+              <>
+                <input
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full border p-3 rounded"
+                />
+
+                <button
+                  onClick={verifyOTP}
+                  className="w-full bg-green-500 text-white p-3 rounded"
+                >
+                  Verify OTP
+                </button>
+              </>
+            )}
+
+            {step === "reset" && (
+              <>
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full border p-3 rounded"
+                />
+
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full border p-3 rounded"
+                />
+
+                <button
+                  onClick={resetPassword}
+                  className="w-full bg-green-500 text-white p-3 rounded"
+                >
+                  Update Password
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => setShowForgotPassword(false)}
+              className="text-center w-full text-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* FIND EMAIL POPUP */}
+
+      {showFindEmail && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white w-[420px] p-6 rounded-xl space-y-4">
+            <h3 className="text-xl font-semibold text-center">Find Email</h3>
+
+            <input
+              placeholder="Enter mobile number"
+              value={phone}
+              onChange={handlePhoneChange}
+              className="w-full border p-3 rounded"
+            />
+
+            <button
+              onClick={findEmails}
+              className="w-full bg-green-500 text-white p-3 rounded"
+            >
+              Find Emails
+            </button>
+
+            {emails.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setEmail(item.email);
+                  setMaskedEmail(item.masked);
+                  setShowFindEmail(false);
+                  setShowForgotPassword(true);
+                  setStep("email");
+                }}
+                className="w-full border p-3 rounded"
+              >
+                {item.masked}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setShowFindEmail(false)}
+              className="w-full text-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
