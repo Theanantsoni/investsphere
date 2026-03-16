@@ -11,8 +11,7 @@ import {
 } from "recharts";
 
 import { CartesianGrid } from "recharts";
-
-import MarketTicker from "../shared/components/MarketLiveBoard;";
+import MarketLiveBoard from "../shared/components/MarketLiveBoard;";
 
 const Home = () => {
   const [coins, setCoins] = useState([]);
@@ -27,6 +26,16 @@ const Home = () => {
 
   const [days, setDays] = useState(7);
   const [chartData, setChartData] = useState([]);
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("investsphere_user");
+
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const fetchMarketData = async () => {
     try {
@@ -93,7 +102,7 @@ const Home = () => {
   return (
     <div className="bg-gray-50">
       {/* 🔥 LIVE MARKET TICKER */}
-      <MarketTicker />
+      <MarketLiveBoard />
 
       {/* ================= ENTERPRISE HERO ================= */}
       <section className="relative bg-gradient-to-b from-white to-slate-50 border-b border-gray-100">
@@ -134,7 +143,7 @@ const Home = () => {
             </Link>
 
             <Link
-              to="/sip"
+              to="/sip/planner"
               className="px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition duration-300"
             >
               SIP Calculator
@@ -830,20 +839,32 @@ const Home = () => {
       <section className="py-24 bg-slate-50 border-t border-gray-200">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 tracking-tight">
-            Ready to Grow Your Portfolio?
+            {user
+              ? "Continue Your Investment Journey"
+              : "Ready to Grow Your Portfolio?"}
           </h2>
 
           <p className="text-gray-600 mb-10 max-w-2xl mx-auto">
-            Join thousands of investors who trust InvestSphere to make smarter,
-            data-driven financial decisions.
+            {user
+              ? "Explore market opportunities, analyze stocks, and stay ahead with real-time financial insights."
+              : "Join thousands of investors who trust InvestSphere to make smarter, data-driven financial decisions."}
           </p>
 
-          <Link
-            to="/register"
-            className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 hover:shadow-md transition duration-300"
-          >
-            Get Started
-          </Link>
+          {user ? (
+            <Link
+              to="/stock"
+              className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 hover:shadow-md transition duration-300"
+            >
+              Explore Markets
+            </Link>
+          ) : (
+            <Link
+              to="/register"
+              className="inline-block bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold shadow-sm hover:bg-indigo-700 hover:shadow-md transition duration-300"
+            >
+              Get Started
+            </Link>
+          )}
         </div>
       </section>
     </div>

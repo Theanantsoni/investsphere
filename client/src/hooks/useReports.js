@@ -1,68 +1,82 @@
 import { useState } from "react";
-import {
-  createReport,
-  getReportsByEmail
-} from "../services/reportService";
-
-/* ======================================================
-   USE REPORTS HOOK
-====================================================== */
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const useReports = () => {
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  /* ======================================================
-     SUBMIT REPORT
-  ====================================================== */
+  /* ================= CREATE REPORT ================= */
 
-  const submitReport = async ({
-    title,
-    description,
-    userEmail,
-    userName
-  }) => {
+  const submitReport = async (data) => {
 
-    setLoading(true);
+    try {
 
-    const response = await createReport({
-      title,
-      description,
-      userEmail,
-      userName
-    });
+      setLoading(true);
 
-    setLoading(false);
+      const res = await axios.post(
+        "http://localhost:5000/api/reports",
+        data
+      );
 
-    return response;
+      if (res.data.success) {
+        toast.success("Report submitted successfully", { duration: 3000 });
+      }
+
+      return res.data;
+
+    } catch (err) {
+
+      toast.error(
+        err.response?.data?.message || "Server error",
+        { duration: 3000 }
+      );
+
+      return { success: false };
+
+    } finally {
+      setLoading(false);
+    }
+
   };
 
-  /* ======================================================
-     FETCH REPORTS
-  ====================================================== */
+  /* ================= FETCH REPORTS ================= */
 
   const fetchReports = async (email) => {
 
-    setLoading(true);
+    try {
 
-    const response = await getReportsByEmail(email);
+      setLoading(true);
 
-    if (response.success) {
-      setReports(response.reports);
+      const res = await axios.get(
+        `http://localhost:5000/api/reports/${email}`
+      );
+
+      if (res.data.success) {
+        setReports(res.data.reports);
+      }
+
+    } catch (err) {
+
+      toast.error(
+        err.response?.data?.message || "Server error",
+        { duration: 3000 }
+      );
+
+    } finally {
+      setLoading(false);
     }
 
-    setLoading(false);
-
-    return response;
   };
 
   return {
-    reports,
-    loading,
     submitReport,
-    fetchReports
+    fetchReports,
+    reports,
+    loading
   };
+
 };
 
 export default useReports;

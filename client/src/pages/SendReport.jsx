@@ -8,6 +8,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 import useReports from "../hooks/useReports";
 
@@ -71,7 +72,15 @@ const SendReport = () => {
   ====================================================== */
 
   const handleSubmit = async () => {
-    if (!title || !description) return;
+    if (!title || !description) {
+      toast.error("All fields are required", { duration: 3000 });
+      return;
+    }
+
+    if (!storedUser || !storedUser.email || !storedUser.name) {
+      toast.error("User information missing", { duration: 3000 });
+      return;
+    }
 
     const response = await submitReport({
       title,
@@ -92,6 +101,11 @@ const SendReport = () => {
   ====================================================== */
 
   const handleFetchReports = async () => {
+    if (!storedUser || !storedUser.email) {
+      toast.error("User email not found", { duration: 3000 });
+      return;
+    }
+
     await fetchReports(storedUser.email);
     setReportsPopup(true);
   };
@@ -152,9 +166,7 @@ const SendReport = () => {
                 </button>
 
                 {openIndex === index && (
-                  <div className="pb-4 text-gray-600 text-sm">
-                    {faq.answer}
-                  </div>
+                  <div className="pb-4 text-gray-600 text-sm">{faq.answer}</div>
                 )}
               </div>
             ))}
@@ -243,8 +255,6 @@ const SendReport = () => {
       {reportsPopup && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white rounded-xl shadow-xl w-[700px] max-h-[80vh] overflow-y-auto p-8 relative">
-            {/* CLOSE BUTTON */}
-
             <button
               onClick={() => setReportsPopup(false)}
               className="absolute top-4 right-4 text-gray-500 hover:text-red-500"
