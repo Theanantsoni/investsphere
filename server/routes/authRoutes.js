@@ -3,49 +3,32 @@ const express = require("express");
 const {
   sendRegisterOTP,
   verifyRegisterOTP,
-  loginUser
+  loginUser,
+  sendForgotPasswordOTP,
+  verifyForgotPasswordOTP,
+  resetPassword,
+  findEmailByMobile
 } = require("../controllers/authController");
 
 const router = express.Router();
 
+/* ================= REGISTER ================= */
 
-// ======================================================
-// AUTH ROUTES
-// ======================================================
+router.post("/register/send-otp", sendRegisterOTP);
+router.post("/register/verify-otp", verifyRegisterOTP);
 
+/* ================= LOGIN ================= */
 
-// --------------------------------------
-// SEND OTP FOR REGISTRATION
-// --------------------------------------
+router.post("/login", loginUser);
 
-router.post(
-  "/register/send-otp",
-  sendRegisterOTP
-);
+/* ================= FORGOT PASSWORD ================= */
 
+router.post("/forgot-password/send-otp", sendForgotPasswordOTP);
+router.post("/forgot-password/verify-otp", verifyForgotPasswordOTP);
+router.post("/forgot-password/reset", resetPassword);
 
-// --------------------------------------
-// VERIFY OTP + COMPLETE REGISTRATION
-// --------------------------------------
+/* ================= FIND EMAIL BY MOBILE ================= */
 
-router.post(
-  "/register/verify-otp",
-  verifyRegisterOTP
-);
-
-
-// --------------------------------------
-// LOGIN USER
-// --------------------------------------
-
-router.post(
-  "/login",
-  loginUser
-);
-
-
-// ======================================================
-// EXPORT ROUTER
-// ======================================================
+router.post("/find-email-by-mobile", findEmailByMobile);
 
 module.exports = router;

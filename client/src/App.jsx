@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 import MainLayout from "./shared/layout/MainLayout";
 
@@ -40,14 +41,17 @@ import WatchlistPage from "./modules/watchlist/pages/WatchlistPage";
 
 import Profile from "./pages/Profile";
 
-/* ================= OPTIONAL FUTURE PAGES ================= */
+/* ================= SETTINGS ================= */
 
 import Settings from "./pages/Settings";
+import ProfileUpdate from "./shared/components/ProfileUpdate";
 import SendReport from "./pages/SendReport";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
+
       <Routes>
         {/* ================= AUTH ROUTES ================= */}
 
@@ -65,9 +69,10 @@ function App() {
 
           <Route path="profile" element={<Profile />} />
 
-          {/* ================= FUTURE ROUTES ================= */}
+          {/* ================= SETTINGS ================= */}
 
           <Route path="settings" element={<Settings />} />
+          <Route path="profile-update" element={<ProfileUpdate />} />
           <Route path="send-report" element={<SendReport />} />
 
           {/* ================= STOCK ROUTES ================= */}

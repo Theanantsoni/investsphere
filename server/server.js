@@ -18,8 +18,12 @@ const cryptoRoutes = require("./routes/cryptoRoutes");
 const marketRoutes = require("./routes/marketRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const watchlistRoutes = require("./routes/watchlistRoutes");
-const userRoutes = require("./routes/userRoutes"); 
+const userRoutes = require("./routes/userRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+
+/* ✅ NEW ROUTE FOR PROFILE UPDATE */
+
+const profileRoutes = require("./routes/profileRoutes");
 
 /* ================= CONTROLLERS (Backward compatibility) ================= */
 
@@ -105,9 +109,13 @@ app.use("/api/watchlist", watchlistRoutes);
 
 app.use("/api/users", userRoutes);
 
- /* ================= SEND REPORT ================= */
+/* ================= SEND REPORT ================= */
 
- app.use("/api/reports", reportRoutes);
+app.use("/api/reports", reportRoutes);
+
+/* ✅ PROFILE UPDATE ROUTE */
+
+app.use("/api/profile", profileRoutes);
 
 
 /* ======================================================

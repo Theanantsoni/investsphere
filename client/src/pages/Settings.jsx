@@ -4,12 +4,33 @@ import { useNavigate } from "react-router-dom";
 const Settings = () => {
   const navigate = useNavigate();
 
+  const settingsOptions = [
+    {
+      title: "Profile Update",
+      description: "Update email, phone number or password securely.",
+      action: () => navigate("/profile-update"),
+    },
+    {
+      title: "Security",
+      description: "Manage password and authentication settings.",
+      action: () => navigate("/security"),
+    },
+    {
+      title: "Notifications",
+      description: "Configure alerts, reminders and platform updates.",
+      action: () => navigate("/notifications"),
+    },
+    {
+      title: "Preferences",
+      description: "Customize platform appearance and experience.",
+      action: () => navigate("/preferences"),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-6">
-      
       {/* HEADER */}
       <div className="max-w-5xl mx-auto flex items-center justify-between mb-8">
-        
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition"
@@ -23,55 +44,35 @@ const Settings = () => {
           InvestSphere Settings
         </div>
 
-        <div></div>
+        <div />
       </div>
 
-      {/* CARD */}
+      {/* SETTINGS CARD */}
       <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-10">
+        <h1 className="text-2xl font-semibold text-gray-800 mb-2">Settings</h1>
 
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">
-          Settings
-        </h1>
-
-        <p className="text-gray-600 leading-relaxed">
-          This is the InvestSphere settings page. Future configuration options
-          like security preferences, notification settings, account privacy,
-          and personalization features will appear here.
+        <p className="text-gray-600 mb-8">
+          Manage your InvestSphere account settings including profile updates,
+          security preferences, notifications and platform personalization.
         </p>
 
-        <div className="mt-8 grid md:grid-cols-3 gap-6">
+        {/* SETTINGS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {settingsOptions.map((option, index) => (
+            <div
+              key={index}
+              onClick={option.action}
+              className="border rounded-lg p-6 hover:shadow-md transition cursor-pointer hover:border-blue-500"
+            >
+              <h3 className="font-semibold text-gray-800 mb-2">
+                {option.title}
+              </h3>
 
-          <div className="border rounded-lg p-6 hover:shadow-md transition">
-            <h3 className="font-semibold text-gray-800 mb-2">
-              Security
-            </h3>
-            <p className="text-sm text-gray-500">
-              Manage password and authentication.
-            </p>
-          </div>
-
-          <div className="border rounded-lg p-6 hover:shadow-md transition">
-            <h3 className="font-semibold text-gray-800 mb-2">
-              Notifications
-            </h3>
-            <p className="text-sm text-gray-500">
-              Configure alerts and updates.
-            </p>
-          </div>
-
-          <div className="border rounded-lg p-6 hover:shadow-md transition">
-            <h3 className="font-semibold text-gray-800 mb-2">
-              Preferences
-            </h3>
-            <p className="text-sm text-gray-500">
-              Customize platform experience.
-            </p>
-          </div>
-
+              <p className="text-sm text-gray-500">{option.description}</p>
+            </div>
+          ))}
         </div>
-
       </div>
-
     </div>
   );
 };

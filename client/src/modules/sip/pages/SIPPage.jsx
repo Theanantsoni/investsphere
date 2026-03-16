@@ -17,7 +17,9 @@ import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 import { getFundMinSip, getFundCategory, getFundRisk } from "../utils/sipUtils";
 
 const SIPPage = () => {
-  const { sipData = [], loading } = useSIP();
+  const { sipData, loading } = useSIP();
+
+  const safeSipData = Array.isArray(sipData) ? sipData : [];
 
   const [search, setSearch] = useState("");
 
@@ -83,8 +85,9 @@ const SIPPage = () => {
   /* FILTER LOGIC */
 
   const filteredFunds = useMemo(() => {
-    return sipData
+    const funds = Array.isArray(sipData) ? sipData : [];
 
+    return funds
       .filter((fund) =>
         fund.schemeName?.toLowerCase().includes(search.toLowerCase()),
       )

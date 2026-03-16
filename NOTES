@@ -1,18 +1,25 @@
 Notes:          https://github.com/Theanantsoni/investsphere/blob/main/NOTES
 
 
+Login  - Forgot Email / Password - Email verification Complete - 17-03-26
+Update Profile - Mobile number & password complete - 17-03-26
+
 Profile, Send Report - Data show and insert complete 14-03-26
 IPO, Stock, SIP - Remove data from watchlist complete/ SIP calculator - sip suggestion data watchlist complete. 14-03-26
 Watchlist - Stock, IPO, SIP Pagination complete. 14-03-26
+
 watchlist -> Add to watchlist ->  Stock, IPO, SIP data show and successfully insert. 13-03-26
+
 Login using register email and password Complete- 12-03-26
 Register Form - Data Insert Complete Using Email OTP Process. 12-03-26
 
 server folder different route and controllers complete. Client side working proper with all API data - 11-03-26
+
 Login and register page create -> After server.js to different routes and controllers file and folder in server
 Stock and Stock Details page complete - 10-03-26
 
 Back to SIP List and reset click page - 1 complete. 27-02-26
+
 IPO - types : NASDAQ , NYSE Complete.
 SIP details - start date and End date calender validation complete. With Reset button
 SIP / IPO / Market News - Page Loader - Investsphere complete

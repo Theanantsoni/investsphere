@@ -1,5 +1,4 @@
-// sip/hooks/useSIP.js
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const useSIP = () => {
@@ -7,10 +6,23 @@ const useSIP = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get("/api/sip")
-      .then(res => setSipData(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchSIP = async () => {
+      try {
+        const res = await axios.get(
+          "https://api.mfapi.in/mf"
+        );
+
+        // IMPORTANT FIX
+        setSipData(Array.isArray(res.data) ? res.data : res.data.data || []);
+
+      } catch (error) {
+        console.error("SIP fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSIP();
   }, []);
 
   return { sipData, loading };
