@@ -233,14 +233,14 @@ const Profile = () => {
           <div className="flex items-center gap-2">
             <Clock size={16} />
             <span>
-              Created: <b>{formatDate(user.createdAt)}</b>
+              Account Created: <b>{formatDate(user.createdAt)}</b>
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Clock size={16} />
             <span>
-              Updated: <b>{formatDate(user.updatedAt)}</b>
+              Account Updated: <b>{formatDate(user.updatedAt)}</b>
             </span>
           </div>
 

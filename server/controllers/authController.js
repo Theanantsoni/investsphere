@@ -6,87 +6,75 @@ const { verifyCaptcha } = require("../services/captchaService");
 const { sendOTPEmail } = require("../services/emailService");
 
 /* ================================================= */
+/* HELPER */
+/* ================================================= */
+
+const normalizeEmail = (email) => email?.trim().toLowerCase();
+
+/* ================================================= */
 /* SEND OTP REGISTER */
 /* ================================================= */
 
 const sendRegisterOTP = async (req, res) => {
   try {
-
     const { email, recaptchaToken } = req.body;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is required"
-      });
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
     if (!recaptchaToken) {
-      return res.status(400).json({
-        success: false,
-        message: "Captcha verification required"
-      });
+      return res.status(400).json({ success: false, message: "Captcha required" });
     }
 
     const captchaValid = await verifyCaptcha(recaptchaToken);
 
     if (!captchaValid) {
-      return res.status(400).json({
-        success: false,
-        message: "Captcha verification failed"
-      });
+      return res.status(400).json({ success: false, message: "Captcha failed" });
     }
 
+    const cleanEmail = normalizeEmail(email);
+
     const existingUser = await Register.findOne({
-      email,
-      verified: true
+      email: cleanEmail,
+      verified: true,
     });
 
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Email already registered"
+        message: "Email already registered",
       });
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
 
-    const expireMinutes = process.env.OTP_EXPIRE_MINUTES || 5;
-
-    const otpExpire = new Date(
-      Date.now() + expireMinutes * 60000
-    );
-
-    let user = await Register.findOne({ email });
+    let user = await Register.findOne({ email: cleanEmail });
 
     if (!user) {
       user = new Register({
-        email,
-        verified: false
+        email: cleanEmail,
+        verified: false,
       });
     }
 
     user.otp = otp;
-    user.otpExpire = otpExpire;
+    user.otpExpire = new Date(Date.now() + 5 * 60000);
 
     await user.save();
 
-    await sendOTPEmail(email, otp);
+    await sendOTPEmail(cleanEmail, otp);
 
-    res.json({
+    return res.json({
       success: true,
-      message: "OTP sent successfully"
+      message: "OTP sent successfully",
     });
-
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
+    console.error("SEND OTP ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "OTP sending failed"
+      message: "OTP sending failed",
     });
-
   }
 };
 
@@ -95,70 +83,66 @@ const sendRegisterOTP = async (req, res) => {
 /* ================================================= */
 
 const verifyRegisterOTP = async (req, res) => {
-
   try {
-
     const { email, otp, form } = req.body;
 
-    const user = await Register.findOne({ email });
+    if (!email || !otp || !form) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    const cleanEmail = normalizeEmail(email);
+
+    const user = await Register.findOne({ email: cleanEmail }).select("+otp");
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "User not found"
+        message: "User not found",
       });
     }
 
-    if (user.otp !== otp) {
+    if (user.otp !== String(otp)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP"
+        message: "Invalid OTP",
       });
     }
 
     if (user.otpExpire < new Date()) {
       return res.status(400).json({
         success: false,
-        message: "OTP expired"
+        message: "OTP expired",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(
-      form.password,
-      10
-    );
-
-    user.name = form.name;
-    user.phone = form.phone;
+    user.name = form.name || "";
+    user.phone = form.phone || "";
     user.country = form.country || "India";
-    user.state = form.state;
-    user.pan = form.pan;
-    user.dob = form.dob;
-    user.password = hashedPassword;
+    user.state = form.state || "";
+    user.pan = form.pan || "";
+    user.dob = form.dob || null;
+    user.password = await bcrypt.hash(form.password, 10);
 
     user.verified = true;
-
     user.otp = undefined;
     user.otpExpire = undefined;
 
     await user.save();
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Registration successful"
+      message: "Registration successful",
     });
-
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
+    console.error("VERIFY REGISTER ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "Verification failed"
+      message: "Verification failed",
     });
-
   }
-
 };
 
 /* ================================================= */
@@ -166,111 +150,57 @@ const verifyRegisterOTP = async (req, res) => {
 /* ================================================= */
 
 const loginUser = async (req, res) => {
-
   try {
-
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Enter email and password"
+        message: "Email and password required",
       });
     }
 
+    const cleanEmail = normalizeEmail(email);
+
     const user = await Register.findOne({
-      email,
-      verified: true
-    });
+      email: cleanEmail,
+      verified: true,
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
-    const match = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!match) {
+    if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password"
+        message: "Invalid email or password",
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
       message: "Login successful",
       user: {
         id: user._id,
         name: user.name,
-        email: user.email
-      }
+        email: user.email,
+        profileImage: user.profileImage || "",
+        verified: user.verified,
+      },
     });
-
   } catch (error) {
-
-    console.error(error);
-
-    res.status(500).json({
+    console.error("LOGIN ERROR:", error);
+    return res.status(500).json({
       success: false,
-      message: "Login failed"
+      message: "Login failed",
     });
-
   }
-
-};
-
-/* ================================================= */
-/* FIND EMAIL BY MOBILE */
-/* ================================================= */
-
-const maskEmail = (email) => {
-
-  const [name, domain] = email.split("@");
-
-  return name[0] + "*****@" + domain;
-};
-
-const findEmailByMobile = async (req, res) => {
-
-  try {
-
-    const { phone } = req.body;
-
-    if (!phone) {
-      return res.status(400).json({
-        success: false
-      });
-    }
-
-    const users = await Register.find({
-      phone,
-      verified: true
-    });
-
-    const emails = users.map((u) => ({
-      email: u.email,
-      masked: maskEmail(u.email)
-    }));
-
-    res.json({
-      success: true,
-      emails
-    });
-
-  } catch {
-
-    res.status(500).json({
-      success: false
-    });
-
-  }
-
 };
 
 /* ================================================= */
@@ -278,86 +208,87 @@ const findEmailByMobile = async (req, res) => {
 /* ================================================= */
 
 const sendForgotPasswordOTP = async (req, res) => {
-
   try {
-
     const { email } = req.body;
 
-    const user = await Register.findOne({ email });
+    const cleanEmail = normalizeEmail(email);
+
+    const user = await Register.findOne({ email: cleanEmail });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Email not registered"
+        message: "Email not registered",
       });
     }
 
     const otp = crypto.randomInt(100000, 999999).toString();
 
     user.otp = otp;
-
     user.otpExpire = new Date(Date.now() + 5 * 60000);
 
     await user.save();
 
-    await sendOTPEmail(
-      email,
-      otp,
-      "Password Reset"
-    );
+    await sendOTPEmail(cleanEmail, otp, "Password Reset");
 
-    res.json({
-      success: true
+    return res.json({
+      success: true,
+      message: "OTP sent",
     });
-
-  } catch {
-
-    res.status(500).json({
-      success: false
+  } catch (error) {
+    console.error("FORGOT OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
-
   }
-
 };
 
 /* ================================================= */
-/* VERIFY OTP */
+/* VERIFY FORGOT PASSWORD OTP */
 /* ================================================= */
 
 const verifyForgotPasswordOTP = async (req, res) => {
-
   try {
-
     const { email, otp } = req.body;
 
-    const user = await Register.findOne({ email });
+    const cleanEmail = normalizeEmail(email);
 
-    if (!user || user.otp !== otp) {
+    const user = await Register.findOne({ email: cleanEmail }).select("+otp");
+
+    if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP"
+        message: "User not found",
+      });
+    }
+
+    if (user.otp !== String(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
       });
     }
 
     if (user.otpExpire < new Date()) {
       return res.status(400).json({
         success: false,
-        message: "OTP expired"
+        message: "OTP expired",
       });
     }
 
-    res.json({
-      success: true
+    /* mark verified */
+    user.otp = "VERIFIED";
+    await user.save();
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("VERIFY OTP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
-
-  } catch {
-
-    res.status(500).json({
-      success: false
-    });
-
   }
-
 };
 
 /* ================================================= */
@@ -365,33 +296,65 @@ const verifyForgotPasswordOTP = async (req, res) => {
 /* ================================================= */
 
 const resetPassword = async (req, res) => {
-
   try {
-
     const { email, password } = req.body;
 
-    const hashed = await bcrypt.hash(password, 10);
+    const cleanEmail = normalizeEmail(email);
 
-    await Register.updateOne(
-      { email },
-      {
-        $set: { password: hashed },
-        $unset: { otp: "", otpExpire: "" }
-      }
-    );
+    const user = await Register.findOne({ email: cleanEmail }).select("+otp");
 
-    res.json({
-      success: true
+    if (!user || user.otp !== "VERIFIED") {
+      return res.status(400).json({
+        success: false,
+        message: "OTP verification required",
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.otp = undefined;
+    user.otpExpire = undefined;
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Password updated",
     });
-
-  } catch {
-
-    res.status(500).json({
-      success: false
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
     });
-
   }
+};
 
+/* ================================================= */
+/* FIND EMAIL BY MOBILE */
+/* ================================================= */
+
+const findEmailByMobile = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    const users = await Register.find({
+      phone,
+      verified: true,
+    });
+
+    const emails = users.map((u) => ({
+      email: u.email,
+      masked: u.email.slice(0, 3) + "****@" + u.email.split("@")[1],
+    }));
+
+    return res.json({ success: true, emails });
+  } catch (error) {
+    console.error("FIND EMAIL ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
 };
 
 module.exports = {
@@ -401,5 +364,5 @@ module.exports = {
   sendForgotPasswordOTP,
   verifyForgotPasswordOTP,
   resetPassword,
-  findEmailByMobile
+  findEmailByMobile,
 };

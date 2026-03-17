@@ -63,10 +63,18 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!form.email || !form.password) {
+      toast.error("Email and password required");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const res = await axios.post("http://localhost:5000/api/login", form);
+      const res = await axios.post("http://localhost:5000/api/login", {
+        email: form.email.trim(),
+        password: form.password.trim(),
+      });
 
       if (res.data.success) {
         const userData = {
@@ -85,6 +93,7 @@ function LoginPage() {
         }, 600);
       }
     } catch (err) {
+      console.log("LOGIN ERROR:", err.response?.data);
       toast.error(err.response?.data?.message || "Server error");
     }
 
@@ -129,7 +138,10 @@ function LoginPage() {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/verify-otp",
-        { email, otp },
+        {
+          email: email.trim().toLowerCase(),
+          otp: otp.trim(), // ✅ string enough hai, extra casting not needed
+        },
       );
 
       if (res.data.success) {
@@ -137,6 +149,7 @@ function LoginPage() {
         setStep("reset");
       }
     } catch (err) {
+      console.log("VERIFY OTP ERROR:", err.response?.data);
       toast.error(err.response?.data?.message || "Invalid OTP");
     }
   };
@@ -330,7 +343,8 @@ function LoginPage() {
                 <input
                   placeholder="Enter OTP"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  maxLength={6}
                   className="w-full border p-3 rounded"
                 />
 
