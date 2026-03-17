@@ -1,6 +1,10 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+const path = require("path");
+
+require("dotenv").config({
+  path: path.resolve(__dirname, "../.env"),
+});
 
 /* ======================================================
    IMPORTS
@@ -28,8 +32,8 @@ const profileRoutes = require("./routes/profileRoutes");
 /* ================= CONTROLLERS (Backward compatibility) ================= */
 
 const {
-  getTicker,
-  getMarketHistory
+   getTicker,
+   getMarketHistory
 } = require("./controllers/marketController");
 
 const { getStockDetail } = require("./controllers/stockController");
@@ -60,10 +64,10 @@ connectDB();
 ====================================================== */
 
 app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true
-  })
+   cors({
+      origin: "http://localhost:5173",
+      credentials: true
+   })
 );
 
 app.use(express.json());
@@ -136,10 +140,10 @@ app.get("/api/market-news", getMarketNews);
 ====================================================== */
 
 app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "InvestSphere API Running 🚀"
-  });
+   res.json({
+      success: true,
+      message: "InvestSphere API Running 🚀"
+   });
 });
 
 
@@ -149,12 +153,12 @@ app.get("/", (req, res) => {
 
 app.use((err, req, res, next) => {
 
-  console.error("Server Error:", err);
+   console.error("Server Error:", err);
 
-  res.status(500).json({
-    success: false,
-    message: "Internal Server Error"
-  });
+   res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+   });
 
 });
 
@@ -167,10 +171,10 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
 
-  console.log("====================================");
-  console.log("🚀 InvestSphere Server Running");
-  console.log(`🌐 http://localhost:${PORT}`);
-  console.log("====================================");
+   console.log("====================================");
+   console.log("🚀 InvestSphere Server Running");
+   console.log(`🌐 http://localhost:${PORT}`);
+   console.log("====================================");
 
 });
 

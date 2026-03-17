@@ -16,6 +16,8 @@ import {
   Flag,
 } from "lucide-react";
 
+const API = "http://localhost:5000/api";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -24,14 +26,27 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef();
 
-  /* ================= CHECK LOGIN ================= */
+  /* ================= FETCH USER ================= */
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("investsphere_user");
+    const fetchUser = async () => {
+      const storedUser = JSON.parse(localStorage.getItem("investsphere_user"));
 
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+      if (!storedUser?.email) return;
+
+      try {
+        const res = await fetch(`${API}/users/profile/${storedUser.email}`);
+        const data = await res.json();
+
+        if (data.success) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        console.log("Navbar fetch error:", err);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   /* ================= CLOSE DROPDOWN ================= */
@@ -62,35 +77,41 @@ const Navbar = () => {
     { name: "Stocks", path: "/stock", icon: <BarChart3 size={18} /> },
     { name: "IPO", path: "/ipo", icon: <Landmark size={18} /> },
     { name: "Watchlist", path: "/watchlist", icon: <Star size={18} /> },
-    { name: "Market News", path: "/market-news", icon: <Newspaper size={18} /> },
+    {
+      name: "Market News",
+      path: "/market-news",
+      icon: <Newspaper size={18} />,
+    },
   ];
+
+  /* ================= IMAGE LOGIC ================= */
+
+  const profileImage =
+    user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name}`;
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
-        {/* ================= LOGO ================= */}
-
+        {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <img
             src="/Images/7.png"
             alt="InvestSphere Logo"
             className="w-11 h-11 object-contain group-hover:scale-105 transition"
           />
-
           <span className="text-xl md:text-2xl font-bold tracking-wide text-gray-800">
             Invest<span className="text-blue-600">Sphere</span>
           </span>
         </Link>
 
-        {/* ================= DESKTOP NAV ================= */}
-
+        {/* DESKTOP NAV */}
         <div className="hidden md:flex items-center gap-8 text-gray-700 font-medium">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `relative flex items-center gap-2 transition duration-300 group ${
+                `relative flex items-center gap-2 transition group ${
                   isActive ? "text-blue-600" : "hover:text-blue-600"
                 }`
               }
@@ -106,54 +127,67 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* ================= PROFILE SECTION ================= */}
-
-        <div className="hidden md:flex items-center gap-6 relative" ref={dropdownRef}>
+        {/* PROFILE */}
+        <div
+          className="hidden md:flex items-center gap-6 relative"
+          ref={dropdownRef}
+        >
           {user ? (
             <div className="relative">
-              {/* PROFILE BUTTON */}
-
+              {/* BUTTON */}
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-lg transition"
+                className="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-xl transition"
               >
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Welcome</p>
+                  <p className="text-xs text-gray-500">Welcome</p>
                   <p className="font-semibold text-gray-800">{user.name}</p>
                 </div>
 
-                <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                  {user.name?.charAt(0)}
+                {/* PROFILE IMAGE */}
+                <div className="relative">
+                  <img
+                    src={profileImage}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+                  />
+
+                  {/* ONLINE DOT */}
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
               </button>
 
               {/* DROPDOWN */}
-
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-200 shadow-xl rounded-xl overflow-hidden animate-fade">
+                <div className="absolute right-0 mt-3 w-60 bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden animate-fade-in">
+                  {/* USER INFO */}
+                  <div className="px-5 py-4 border-b bg-gray-50">
+                    <p className="font-semibold text-gray-800">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+
                   <Link
                     to="/profile"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition text-gray-700"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
                   >
                     <User size={18} />
-                    Check Profile
+                    Profile
                   </Link>
 
                   <Link
                     to="/settings"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition text-gray-700"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
                   >
                     <Settings size={18} />
                     Settings
                   </Link>
 
                   <Link
-  to="/send-report"
-  className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition text-gray-700"
->
-  <Flag size={18} />
-  Send Report
-</Link>
+                    to="/send-report"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
+                  >
+                    <Flag size={18} />
+                    Send Report
+                  </Link>
 
                   <div className="border-t" />
 
@@ -178,11 +212,10 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* ================= MOBILE MENU BUTTON ================= */}
-
+        {/* MOBILE BUTTON */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-gray-700 hover:scale-110 transition"
+          className="md:hidden text-gray-700"
         >
           {isOpen ? <X size={26} /> : <Menu size={26} />}
         </button>

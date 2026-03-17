@@ -1,5 +1,8 @@
 Notes:          https://github.com/Theanantsoni/investsphere/blob/main/NOTES
 
+ Display photo to profile page and navbar user logo Complete - 17-03-26
+Profile image upload to cloudinary and insert to collection register with email id. 17-03-26
+
 login Bug Solved - 17-03-26
 Login  - Forgot Email / Password - Email verification Complete - 17-03-26
 Update Profile - Mobile number & password complete - 17-03-26
