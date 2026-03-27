@@ -3,114 +3,126 @@ import { Toaster } from "react-hot-toast";
 
 import MainLayout from "./shared/layout/MainLayout";
 
-/* ================= HOME ================= */
+/* ================= PROTECTED ROUTE ================= */
+import ProtectedRoute from "./shared/components/ProtectedRoute";
 
+/* ================= HOME ================= */
 import HomePage from "./pages/HomePage";
 
 /* ================= AUTH PAGES ================= */
-
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 
 /* ================= IPO PAGES ================= */
-
 import IPOPage from "./modules/ipo/pages/IPOPage";
 import IPOApplicationProcessPage from "./modules/ipo/pages/IPOApplicationProcessPage";
 import IPOApplyPage from "./modules/ipo/pages/IPOApplyPage";
 
 /* ================= SIP PAGES ================= */
-
 import SIPPage from "./modules/sip/pages/SIPPage";
 import SIPDetailPage from "./modules/sip/pages/SIPDetailPage";
 import SIPPlannerPage from "./modules/sip/pages/SIPPlannerPage";
 
 /* ================= STOCK PAGES ================= */
-
 import StockPage from "./modules/stock/pages/StockPage";
 import StockDetailPage from "./modules/stock/pages/StockDetailPage";
 
 /* ================= MARKET NEWS ================= */
-
 import MarketNewsPage from "./modules/marketNews/pages/MarketNewsPage";
 
-/* ================= WATCHLIST PAGE ================= */
-
+/* ================= WATCHLIST ================= */
 import WatchlistPage from "./modules/watchlist/pages/WatchlistPage";
 
-/* ================= PROFILE PAGE ================= */
-
+/* ================= PROFILE ================= */
 import Profile from "./pages/Profile";
 
 /* ================= SETTINGS ================= */
-
 import Settings from "./pages/Settings";
 import ProfileUpdate from "./shared/components/ProfileUpdate";
 import SendReport from "./pages/SendReport";
 
+/* ================= SECURITY ================= */
+import SecurityPage from "./pages/SecurityPage";
+
 function App() {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
+      {/* ✅ GLOBAL TOASTER (ONLY ONE) */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+        }}
+      />
 
       <Routes>
-        {/* ================= AUTH ROUTES ================= */}
-
+        {/* ================= AUTH ================= */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
         {/* ================= MAIN LAYOUT ================= */}
-
         <Route path="/" element={<MainLayout />}>
-          {/* ================= HOME ================= */}
-
+          {/* HOME */}
           <Route index element={<HomePage />} />
 
-          {/* ================= PROFILE ================= */}
+          {/* ================= PROTECTED ================= */}
 
-          <Route path="profile" element={<Profile />} />
+          <Route
+            path="profile"
+            element={<ProtectedRoute><Profile /></ProtectedRoute>}
+          />
 
-          {/* ================= SETTINGS ================= */}
+          <Route
+            path="settings"
+            element={<ProtectedRoute><Settings /></ProtectedRoute>}
+          />
 
-          <Route path="settings" element={<Settings />} />
-          <Route path="profile-update" element={<ProfileUpdate />} />
-          <Route path="send-report" element={<SendReport />} />
+          <Route
+            path="profile-update"
+            element={<ProtectedRoute><ProfileUpdate /></ProtectedRoute>}
+          />
 
-          {/* ================= STOCK ROUTES ================= */}
+          <Route
+            path="send-report"
+            element={<ProtectedRoute><SendReport /></ProtectedRoute>}
+          />
 
+          <Route
+            path="security"
+            element={<ProtectedRoute><SecurityPage /></ProtectedRoute>}
+          />
+
+          <Route
+            path="watchlist"
+            element={<ProtectedRoute><WatchlistPage /></ProtectedRoute>}
+          />
+
+          {/* ================= STOCK ================= */}
           <Route path="stock">
             <Route index element={<StockPage />} />
             <Route path=":symbol" element={<StockDetailPage />} />
           </Route>
 
-          {/* ================= SIP ROUTES ================= */}
-
+          {/* ================= SIP ================= */}
           <Route path="sip">
             <Route index element={<SIPPage />} />
             <Route path="planner" element={<SIPPlannerPage />} />
             <Route path=":id" element={<SIPDetailPage />} />
           </Route>
 
-          {/* ================= IPO ROUTES ================= */}
-
+          {/* ================= IPO ================= */}
           <Route path="ipo" element={<IPOPage />} />
-
           <Route
             path="ipo/application-process"
             element={<IPOApplicationProcessPage />}
           />
 
-          {/* ================= MARKET NEWS ================= */}
-
+          {/* ================= NEWS ================= */}
           <Route path="market-news" element={<MarketNewsPage />} />
-
-          {/* ================= WATCHLIST ================= */}
-
-          <Route path="watchlist" element={<WatchlistPage />} />
         </Route>
 
-        {/* ================= OUTSIDE LAYOUT ================= */}
-
-        <Route path="ipo/apply/:symbol" element={<IPOApplyPage />} />
+        {/* ================= OUTSIDE ================= */}
+        <Route path="/ipo/apply/:symbol" element={<IPOApplyPage />} />
       </Routes>
     </BrowserRouter>
   );

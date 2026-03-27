@@ -72,24 +72,28 @@ function LoginPage() {
       setLoading(true);
 
       const res = await axios.post("http://localhost:5000/api/login", {
-        email: form.email.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password.trim(),
       });
 
+      console.log("LOGIN RESPONSE:", res.data);
+
       if (res.data.success) {
         const userData = {
-          id: res.data.user.id,
-          name: res.data.user.name,
-          email: res.data.user.email,
+          token: res.data.token,
+          user: res.data.user,
         };
 
-        localStorage.setItem("investsphere_user", JSON.stringify(userData));
+        localStorage.setItem("user", JSON.stringify(userData));
 
-        toast.success("Login successful");
+        console.log("STORED USER:", userData);
+
+        toast.success("Login successful", {
+          duration: 3000,
+        });
 
         setTimeout(() => {
           navigate("/");
-          window.location.reload();
         }, 600);
       }
     } catch (err) {
@@ -140,7 +144,7 @@ function LoginPage() {
         "http://localhost:5000/api/forgot-password/verify-otp",
         {
           email: email.trim().toLowerCase(),
-          otp: otp.trim(), // ✅ string enough hai, extra casting not needed
+          otp: otp.trim(),
         },
       );
 
@@ -172,33 +176,35 @@ function LoginPage() {
     try {
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/reset",
-        { email, password },
+        {
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
+        },
       );
 
       if (res.data.success) {
         const loginRes = await axios.post("http://localhost:5000/api/login", {
-          email,
-          password,
+          email: email.trim().toLowerCase(),
+          password: password.trim(),
         });
 
         if (loginRes.data.success) {
           const userData = {
-            id: loginRes.data.user.id,
-            name: loginRes.data.user.name,
-            email: loginRes.data.user.email,
+            token: loginRes.data.token,
+            user: loginRes.data.user,
           };
 
-          localStorage.setItem("investsphere_user", JSON.stringify(userData));
+          localStorage.setItem("user", JSON.stringify(userData));
 
-          toast.success("Password updated");
+          toast.success("Password updated & logged in");
 
           setTimeout(() => {
             navigate("/");
-            window.location.reload();
           }, 700);
         }
       }
     } catch (err) {
+      console.log("RESET ERROR:", err.response?.data);
       toast.error(err.response?.data?.message || "Server error");
     }
   };

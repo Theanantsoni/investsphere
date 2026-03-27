@@ -24,6 +24,7 @@ const newsRoutes = require("./routes/newsRoutes");
 const watchlistRoutes = require("./routes/watchlistRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const securityRoutes = require("./routes/securityRoutes");
 
 /* ✅ NEW ROUTE FOR PROFILE UPDATE */
 
@@ -120,6 +121,10 @@ app.use("/api/reports", reportRoutes);
 /* ✅ PROFILE UPDATE ROUTE */
 
 app.use("/api/profile", profileRoutes);
+
+/* ================= SECURITY ROUTE ================= */
+
+app.use("/api/security", securityRoutes); 
 
 
 /* ======================================================

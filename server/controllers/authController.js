@@ -20,17 +20,23 @@ const sendRegisterOTP = async (req, res) => {
     const { email, recaptchaToken } = req.body;
 
     if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email is required" });
     }
 
     if (!recaptchaToken) {
-      return res.status(400).json({ success: false, message: "Captcha required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Captcha required" });
     }
 
     const captchaValid = await verifyCaptcha(recaptchaToken);
 
     if (!captchaValid) {
-      return res.status(400).json({ success: false, message: "Captcha failed" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Captcha failed" });
     }
 
     const cleanEmail = normalizeEmail(email);
@@ -149,6 +155,8 @@ const verifyRegisterOTP = async (req, res) => {
 /* LOGIN */
 /* ================================================= */
 
+const jwt = require("jsonwebtoken");
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -183,15 +191,20 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // 🔥 CREATE TOKEN
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
     return res.json({
       success: true,
       message: "Login successful",
+      token, // ✅ ADD THIS
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         profileImage: user.profileImage || "",
-        verified: user.verified,
       },
     });
   } catch (error) {

@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import {
   Home,
   TrendingUp,
@@ -16,38 +21,26 @@ import {
   Flag,
 } from "lucide-react";
 
-const API = "http://localhost:5000/api";
-
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const dropdownRef = useRef();
 
-  /* ================= FETCH USER ================= */
+  /* ================= USER STATE SYNC ================= */
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const storedUser = JSON.parse(localStorage.getItem("investsphere_user"));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-      if (!storedUser?.email) return;
-
-      try {
-        const res = await fetch(`${API}/users/profile/${storedUser.email}`);
-        const data = await res.json();
-
-        if (data.success) {
-          setUser(data.user);
-        }
-      } catch (err) {
-        console.log("Navbar fetch error:", err);
-      }
-    };
-
-    fetchUser();
-  }, []);
+    if (storedUser?.user) {
+      setUser(storedUser.user);
+    } else {
+      setUser(null);
+    }
+  }, [location.pathname]);
 
   /* ================= CLOSE DROPDOWN ================= */
 
@@ -65,7 +58,7 @@ const Navbar = () => {
   /* ================= LOGOUT ================= */
 
   const logout = () => {
-    localStorage.removeItem("investsphere_user");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -84,10 +77,11 @@ const Navbar = () => {
     },
   ];
 
-  /* ================= IMAGE LOGIC ================= */
+  /* ================= PROFILE IMAGE ================= */
 
   const profileImage =
-    user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name}`;
+    user?.profileImage ||
+    `https://ui-avatars.com/api/?name=${user?.name || "User"}`;
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
@@ -134,40 +128,45 @@ const Navbar = () => {
         >
           {user ? (
             <div className="relative">
-              {/* BUTTON */}
+              {/* PROFILE BUTTON */}
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-xl transition"
               >
                 <div className="text-right">
                   <p className="text-xs text-gray-500">Welcome</p>
-                  <p className="font-semibold text-gray-800">{user.name}</p>
+                  <p className="font-semibold text-gray-800">
+                    {user.name}
+                  </p>
                 </div>
 
-                {/* PROFILE IMAGE */}
+                {/* IMAGE */}
                 <div className="relative">
                   <img
                     src={profileImage}
+                    alt="profile"
                     className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 shadow-sm"
                   />
 
-                  {/* ONLINE DOT */}
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
                 </div>
               </button>
 
               {/* DROPDOWN */}
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-60 bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden animate-fade-in">
-                  {/* USER INFO */}
+                <div className="absolute right-0 mt-3 w-60 bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden">
                   <div className="px-5 py-4 border-b bg-gray-50">
-                    <p className="font-semibold text-gray-800">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="font-semibold text-gray-800">
+                      {user.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {user.email}
+                    </p>
                   </div>
 
                   <Link
                     to="/profile"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
                   >
                     <User size={18} />
                     Profile
@@ -175,7 +174,7 @@ const Navbar = () => {
 
                   <Link
                     to="/settings"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
                   >
                     <Settings size={18} />
                     Settings
@@ -183,7 +182,7 @@ const Navbar = () => {
 
                   <Link
                     to="/send-report"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
                   >
                     <Flag size={18} />
                     Send Report
@@ -193,7 +192,7 @@ const Navbar = () => {
 
                   <button
                     onClick={logout}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 transition w-full text-left"
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left"
                   >
                     <LogOut size={18} />
                     Logout
