@@ -33,11 +33,18 @@ const Navbar = () => {
   /* ================= USER STATE SYNC ================= */
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
+    try {
+      const storedUser = JSON.parse(
+        localStorage.getItem("investsphere_user")
+      );
 
-    if (storedUser?.user) {
-      setUser(storedUser.user);
-    } else {
+      if (storedUser && storedUser.email) {
+        setUser(storedUser);
+      } else {
+        setUser(null);
+      }
+    } catch (error) {
+      console.log("User parse error");
       setUser(null);
     }
   }, [location.pathname]);
@@ -58,7 +65,7 @@ const Navbar = () => {
   /* ================= LOGOUT ================= */
 
   const logout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("investsphere_user");
     navigate("/login");
   };
 

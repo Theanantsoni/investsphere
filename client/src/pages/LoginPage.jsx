@@ -84,7 +84,13 @@ function LoginPage() {
           user: res.data.user,
         };
 
-        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem(
+          "investsphere_user",
+          JSON.stringify({
+            token: res.data.token,
+            ...res.data.user,
+          }),
+        );
 
         console.log("STORED USER:", userData);
 
@@ -194,7 +200,13 @@ function LoginPage() {
             user: loginRes.data.user,
           };
 
-          localStorage.setItem("user", JSON.stringify(userData));
+          localStorage.setItem(
+            "investsphere_user",
+            JSON.stringify({
+              token: loginRes.data.token,
+              ...loginRes.data.user,
+            }),
+          );
 
           toast.success("Password updated & logged in");
 
