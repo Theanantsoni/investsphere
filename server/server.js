@@ -25,11 +25,11 @@ const watchlistRoutes = require("./routes/watchlistRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const securityRoutes = require("./routes/securityRoutes");
-
-/* ================= EXTRA ROUTES ================= */
-
-const profileRoutes = require("./routes/profileRoutes");
+const stockInvestmentRoutes = require("./routes/stockInvestmentRoutes");
 const sipInvestmentRoutes = require("./routes/sipInvestmentRoutes");
+const transactionRoutes = require("./routes/transactionRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const ipoInvestmentRoutes = require("./routes/ipoInvestmentRoutes");
 
 /* ================= CONTROLLERS ================= */
 
@@ -113,8 +113,17 @@ app.use("/api/security", securityRoutes);
 /* ================= SIP INVESTMENT ================= */
 app.use("/api/sip-investments", sipInvestmentRoutes);
 
+/* ================= STOCK INVESTMENT ================= */
+app.use("/api/stock-investments", stockInvestmentRoutes);
+
+/* ================= IPO INVESTMENT ================= */
+app.use("/api/ipo-investments", ipoInvestmentRoutes);
+
+/* ================= TRANSACTIONS ================= */
+app.use("/api/transactions", transactionRoutes);
+
 /* ======================================================
-   BACKWARD COMPATIBILITY ROUTES
+   LEGACY / EXTRA ROUTES
 ====================================================== */
 
 app.get("/api/ticker", getTicker);

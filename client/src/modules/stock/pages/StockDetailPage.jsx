@@ -2,13 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import stockService from "../services/stockService";
+import StockInvest from "../components/StockInvest"; // ✅ NEW
 
 const StockDetailPage = () => {
 
   const { symbol } = useParams();
 
+  /* ================= STATE ================= */
+
   const [stock, setStock] = useState(null);
   const [timeframe, setTimeframe] = useState("1D");
+  const [showInvest, setShowInvest] = useState(false); // ✅ NEW
+
+  /* ================= FETCH STOCK ================= */
 
   useEffect(() => {
 
@@ -17,7 +23,6 @@ const StockDetailPage = () => {
       try {
 
         const res = await stockService.getStock(symbol);
-
         setStock(res);
 
       } catch (error) {
@@ -32,6 +37,8 @@ const StockDetailPage = () => {
 
   }, [symbol]);
 
+  /* ================= LOADING ================= */
+
   if (!stock) {
     return (
       <div className="text-center py-32 text-gray-500">
@@ -39,6 +46,8 @@ const StockDetailPage = () => {
       </div>
     );
   }
+
+  /* ================= DATA ================= */
 
   const positive = (stock.change || 0) >= 0;
 
@@ -52,6 +61,8 @@ const StockDetailPage = () => {
     return Number(value).toLocaleString();
   };
 
+  /* ================= UI ================= */
+
   return (
 
     <div className="bg-gray-50 min-h-screen">
@@ -62,6 +73,7 @@ const StockDetailPage = () => {
 
         <div className="bg-white rounded-xl shadow border p-6 flex flex-col md:flex-row md:items-center md:justify-between">
 
+          {/* LEFT */}
           <div>
 
             <h1 className="text-3xl font-bold text-gray-900">
@@ -74,7 +86,8 @@ const StockDetailPage = () => {
 
           </div>
 
-          <div className="mt-6 md:mt-0">
+          {/* RIGHT */}
+          <div className="mt-6 md:mt-0 flex flex-col items-end gap-3">
 
             <div className="flex items-center gap-6">
 
@@ -95,9 +108,17 @@ const StockDetailPage = () => {
 
             </div>
 
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500">
               Last updated just now
             </p>
+
+            {/* ✅ INVEST BUTTON */}
+            <button
+              onClick={() => setShowInvest(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition"
+            >
+              Invest Now
+            </button>
 
           </div>
 
@@ -199,6 +220,15 @@ const StockDetailPage = () => {
         </div>
 
       </div>
+
+      {/* ================= INVEST MODAL ================= */}
+
+      {showInvest && (
+        <StockInvest
+          stock={stock}
+          onClose={() => setShowInvest(false)}
+        />
+      )}
 
     </div>
 

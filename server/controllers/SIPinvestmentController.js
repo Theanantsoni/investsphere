@@ -1,4 +1,5 @@
 const SIPinvestment = require("../models/SIPinvestmentModel");
+const { createTransaction } = require("../services/transactionService");
 
 /* ======================================================
    ADD SIP INVESTMENT
@@ -70,9 +71,27 @@ const addSIPinvestment = async (req, res) => {
       });
     }
 
-    /* ================= CREATE ================= */
+    /* ================= CREATE SIP ================= */
 
     const investment = await SIPinvestment.create(safeData);
+
+    /* ======================================================
+       CREATE TRANSACTION (🔥 IMPORTANT)
+    ====================================================== */
+
+    await createTransaction({
+      userEmail: safeData.userEmail,
+      username: safeData.username,
+      assetType: "sip",
+      assetCode: safeData.assetCode,
+      assetName: safeData.assetName,
+      type: "BUY",
+      orderType: "sip",
+      quantity: 1, // SIP me quantity nahi hota → 1 logical unit
+      price: safeData.amount,
+      totalAmount: safeData.totalInvested,
+      referenceId: investment._id,
+    });
 
     /* ================= RESPONSE ================= */
 
