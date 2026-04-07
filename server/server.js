@@ -30,6 +30,7 @@ const sipInvestmentRoutes = require("./routes/sipInvestmentRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const ipoInvestmentRoutes = require("./routes/ipoInvestmentRoutes");
+const portfolioRoutes = require("./routes/portfolioRoutes");
 
 /* ================= CONTROLLERS ================= */
 
@@ -121,6 +122,9 @@ app.use("/api/ipo-investments", ipoInvestmentRoutes);
 
 /* ================= TRANSACTIONS ================= */
 app.use("/api/transactions", transactionRoutes);
+
+/* ================= PORTFOLIO ================= */
+app.use("/api/portfolio", portfolioRoutes);
 
 /* ======================================================
    LEGACY / EXTRA ROUTES

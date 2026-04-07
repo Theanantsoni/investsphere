@@ -19,6 +19,7 @@ import {
   User,
   Settings,
   Flag,
+  Briefcase, // 🔥 NEW ICON (Portfolio)
 } from "lucide-react";
 
 const Navbar = () => {
@@ -76,6 +77,14 @@ const Navbar = () => {
     { name: "SIP", path: "/sip", icon: <TrendingUp size={18} /> },
     { name: "Stocks", path: "/stock", icon: <BarChart3 size={18} /> },
     { name: "IPO", path: "/ipo", icon: <Landmark size={18} /> },
+
+    // 🔥 NEW (IMPORTANT)
+    {
+      name: "Portfolio",
+      path: "/portfolio",
+      icon: <Briefcase size={18} />,
+    },
+
     { name: "Watchlist", path: "/watchlist", icon: <Star size={18} /> },
     {
       name: "Market News",
