@@ -1,10 +1,7 @@
-const Transaction = require("../models/TransactionModel");
+const Wallet = require("../models/WalletModel");
 
-/* ======================================================
- GET USER TRANSACTIONS
-====================================================== */
-
-const getUserTransactions = async (req, res) => {
+/* ================= GET USER TRANSACTIONS ================= */
+exports.getUserTransactions = async (req, res) => {
   try {
     const { email } = req.query;
 
@@ -15,86 +12,93 @@ const getUserTransactions = async (req, res) => {
       });
     }
 
-    const transactions = await Transaction.find({
-      userEmail: email,
-    }).sort({ createdAt: -1 });
+    const wallet = await Wallet.findOne({ userEmail: email });
 
-    return res.json({
+    if (!wallet) {
+      return res.json({
+        success: true,
+        count: 0,
+        data: [],
+      });
+    }
+
+    const transactions = wallet.transactions.sort(
+      (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
+    res.json({
       success: true,
       count: transactions.length,
       data: transactions,
     });
   } catch (error) {
-    console.error("Fetch Transactions Error:", error);
-
-    return res.status(500).json({
+    console.error("TRANSACTION ERROR:", error);
+    res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server error",
     });
   }
 };
 
-/* ======================================================
- GET SINGLE TRANSACTION
-====================================================== */
-
-const getTransactionById = async (req, res) => {
+/* ================= GET SINGLE ================= */
+exports.getTransactionById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const transaction = await Transaction.findById(id);
+    const wallet = await Wallet.findOne({
+      "transactions._id": id,
+    });
 
-    if (!transaction) {
+    if (!wallet) {
       return res.status(404).json({
         success: false,
         message: "Transaction not found",
       });
     }
 
-    return res.json({
+    const transaction = wallet.transactions.id(id);
+
+    res.json({
       success: true,
       data: transaction,
     });
   } catch (error) {
-    console.error("Get Transaction Error:", error);
-
-    return res.status(500).json({
+    console.error("GET TRANSACTION ERROR:", error);
+    res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server error",
     });
   }
 };
 
-/* ======================================================
- DELETE TRANSACTION (OPTIONAL ADMIN USE)
-====================================================== */
-
-const deleteTransaction = async (req, res) => {
+/* ================= DELETE ================= */
+exports.deleteTransaction = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await Transaction.findByIdAndDelete(id);
+    const wallet = await Wallet.findOne({
+      "transactions._id": id,
+    });
 
-    return res.json({
+    if (!wallet) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
+    wallet.transactions.id(id).remove();
+    await wallet.save();
+
+    res.json({
       success: true,
       message: "Transaction deleted",
     });
   } catch (error) {
-    console.error("Delete Transaction Error:", error);
-
-    return res.status(500).json({
+    console.error("DELETE ERROR:", error);
+    res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "Server error",
     });
   }
-};
-
-/* ======================================================
- EXPORT
-====================================================== */
-
-module.exports = {
-  getUserTransactions,
-  getTransactionById,
-  deleteTransaction,
 };

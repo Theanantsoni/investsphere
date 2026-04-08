@@ -20,6 +20,7 @@ export const PortfolioProvider = ({ children }) => {
   const [assets, setAssets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [allocation, setAllocation] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   /* ================= USER ================= */
@@ -32,7 +33,7 @@ export const PortfolioProvider = ({ children }) => {
   }, []);
 
   /* ======================================================
- FETCH PORTFOLIO (🔥 SINGLE API)
+ FETCH PORTFOLIO + WALLET (🔥 MERGED)
 ====================================================== */
   const fetchPortfolio = async () => {
     try {
@@ -42,18 +43,47 @@ export const PortfolioProvider = ({ children }) => {
         setAssets([]);
         setSummary(null);
         setAllocation([]);
+        setTransactions([]);
         return;
       }
 
-      const res = await axios.get(
-        `${PORTFOLIO_API.BASE}/portfolio?email=${user.email}`
-      );
+      /* ================= API CALLS ================= */
+      const [portfolioRes, walletRes] = await Promise.all([
+        axios.get(
+          `${PORTFOLIO_API.BASE}/portfolio?email=${user.email}`
+        ),
+        axios.get(
+          `${PORTFOLIO_API.BASE}/wallet?email=${user.email}`
+        ),
+      ]);
 
-      if (!res.data?.success) {
+      if (!portfolioRes.data?.success) {
         throw new Error("Portfolio API failed");
       }
 
-      const { summary: apiSummary, data } = res.data;
+      const { summary: apiSummary, data } = portfolioRes.data;
+
+      /* ================= MERGE TRANSACTIONS ================= */
+      const portfolioTx = data?.transactions || [];
+      const walletTx = walletRes?.data?.wallet?.transactions || [];
+
+      const mergedTransactions = [
+        ...portfolioTx,
+        ...walletTx,
+      ]
+        .map((t) => ({
+          ...t,
+          assetType: t.assetType || "wallet",
+          assetName: t.assetName || "Wallet",
+          totalAmount: t.totalAmount || t.amount || 0,
+          createdAt: t.createdAt || t.date || new Date(),
+        }))
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+      setTransactions(mergedTransactions);
 
       /* ======================================================
  NORMALIZE DATA
@@ -62,7 +92,7 @@ export const PortfolioProvider = ({ children }) => {
       /* 🔹 STOCKS */
       const stockAssets =
         data?.stocks?.map((item) => {
-          const currentValue = item.totalInvestment * 1.1; // mock
+          const currentValue = item.totalInvestment * 1.1;
           const profit = currentValue - item.totalInvestment;
           const percentage =
             item.totalInvestment > 0
@@ -85,7 +115,7 @@ export const PortfolioProvider = ({ children }) => {
       /* 🔹 SIP */
       const sipAssets =
         data?.sips?.map((item) => {
-          const currentValue = item.totalInvestment * 1.08; // mock
+          const currentValue = item.totalInvestment * 1.08;
           const profit = currentValue - item.totalInvestment;
           const percentage =
             item.totalInvestment > 0
@@ -107,7 +137,7 @@ export const PortfolioProvider = ({ children }) => {
       /* 🔹 IPO */
       const ipoAssets =
         data?.ipos?.map((item) => {
-          const currentValue = item.totalInvestment * 1.15; // mock
+          const currentValue = item.totalInvestment * 1.15;
           const profit = currentValue - item.totalInvestment;
           const percentage =
             item.totalInvestment > 0
@@ -154,7 +184,7 @@ export const PortfolioProvider = ({ children }) => {
           : 0;
 
       /* ======================================================
- ALLOCATION (🔥 PIE CHART READY)
+ ALLOCATION
 ====================================================== */
       const grouped = {
         stock: 0,
@@ -186,10 +216,14 @@ export const PortfolioProvider = ({ children }) => {
         currentValue,
         totalProfit,
         profitPercentage: Number(profitPercentage.toFixed(2)),
-        totalAssets: apiSummary?.totalAssets || mergedAssets.length,
-        totalStocks: apiSummary?.totalStocks || stockAssets.length,
-        totalSIPs: apiSummary?.totalSIPs || sipAssets.length,
-        totalIPOs: apiSummary?.totalIPOs || ipoAssets.length,
+        totalAssets:
+          apiSummary?.totalAssets || mergedAssets.length,
+        totalStocks:
+          apiSummary?.totalStocks || stockAssets.length,
+        totalSIPs:
+          apiSummary?.totalSIPs || sipAssets.length,
+        totalIPOs:
+          apiSummary?.totalIPOs || ipoAssets.length,
       });
 
       setAllocation(allocationData);
@@ -198,6 +232,7 @@ export const PortfolioProvider = ({ children }) => {
       setAssets([]);
       setSummary(null);
       setAllocation([]);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -217,6 +252,7 @@ export const PortfolioProvider = ({ children }) => {
     assets,
     summary,
     allocation,
+    transactions,
     loading,
     refreshPortfolio: fetchPortfolio,
   };

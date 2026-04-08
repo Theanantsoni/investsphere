@@ -1,13 +1,18 @@
-import React, { useMemo } from "react";
+import React, { useState } from "react";
 import { usePortfolioContext } from "../context/PortfolioContext";
 
 import PortfolioHeader from "../components/PortfolioHeader";
-import PortfolioSummary from "../components/PortfolioSummary";
-import AssetAllocationChart from "../components/AssetAllocationChart";
-import PortfolioFilters from "../components/PortfolioFilters";
-import PortfolioCard from "../components/PortfolioCard";
-import PortfolioTable from "../components/PortfolioTable";
 import PortfolioLoader from "../components/PortfolioLoader";
+
+/* MAIN VIEWS */
+import PortfolioView from "../components/PortfolioView";
+import TransactionsView from "../components/TransactionsView";
+import AnalyticsView from "../components/AnalyticsView";
+import PnLView from "../components/PnLView";
+import OrdersView from "../components/OrdersView";
+
+/* ✅ WALLET */
+import WalletPage from "../../wallet/pages/WalletPage";
 
 /* ======================================================
  PAGE
@@ -18,106 +23,70 @@ const PortfolioPage = () => {
     summary,
     allocation,
     loading,
+    transactions,
   } = usePortfolioContext();
 
-  /* ======================================================
- FILTER STATE (LOCAL UI ONLY)
-====================================================== */
-  const [filter, setFilter] = React.useState("all");
+  const [activeTab, setActiveTab] = useState("portfolio");
 
-  /* ======================================================
- FILTERED ASSETS
-====================================================== */
-  const filteredAssets = useMemo(() => {
-    if (filter === "all") return assets;
-    return assets.filter((a) => a.type === filter);
-  }, [assets, filter]);
+  const tabs = [
+    "portfolio",
+    "transactions",
+    "wallet",
+    "analytics",
+    "pnl",
+    "orders",
+  ];
 
-  /* ======================================================
- BEST PERFORMER
-====================================================== */
-  const bestPerformer = useMemo(() => {
-    if (!assets.length) return "-";
-    return [...assets].sort((a, b) => b.profit - a.profit)[0]
-      ?.name;
-  }, [assets]);
-
-  /* ======================================================
- RENDER
-====================================================== */
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      {/* HEADER */}
+    <div className="min-h-screen bg-gray-50 px-3 sm:px-4 md:px-6 py-4">
+
+      {/* ================= HEADER ================= */}
       <PortfolioHeader />
 
-      {/* LOADING */}
+      {/* ================= TABS ================= */}
+      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 mt-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-3 sm:px-4 py-2 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 ${
+              activeTab === tab
+                ? "bg-blue-600 text-white shadow-md scale-105"
+                : "bg-white text-gray-600 border hover:bg-gray-100"
+            }`}
+          >
+            {tab === "pnl" ? "P&L" : tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ================= CONTENT ================= */}
       {loading ? (
         <PortfolioLoader />
       ) : (
-        <>
-          {/* SUMMARY */}
-          <div className="mb-6">
-            <PortfolioSummary summary={summary} />
-          </div>
+        <div className="space-y-6">
 
-          {/* TOP GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* ALLOCATION */}
-            <AssetAllocationChart data={allocation} />
+          {activeTab === "portfolio" && (
+            <PortfolioView
+              assets={assets}
+              summary={summary}
+              allocation={allocation}
+            />
+          )}
 
-            {/* FILTER + QUICK VIEW */}
-            <div className="bg-white rounded-2xl p-5 shadow flex flex-col justify-between">
-              <div>
-                <h3 className="font-semibold mb-3">
-                  Filter Investments
-                </h3>
+          {/* ✅ UPDATED */}
+          {activeTab === "transactions" && (
+            <TransactionsView transactions={transactions} />
+          )}
 
-                <PortfolioFilters
-                  filter={filter}
-                  setFilter={setFilter}
-                />
-              </div>
+          {activeTab === "wallet" && <WalletPage />}
 
-              <div className="mt-4 text-sm text-gray-500">
-                Showing:{" "}
-                <span className="font-medium text-gray-800">
-                  {filter.toUpperCase()}
-                </span>
-              </div>
-            </div>
+          {activeTab === "analytics" && <AnalyticsView />}
 
-            {/* QUICK STATS */}
-            <div className="bg-white rounded-2xl p-5 shadow flex flex-col justify-center">
-              <h3 className="font-semibold mb-3">
-                Quick Insights
-              </h3>
+          {activeTab === "pnl" && <PnLView summary={summary} />}
 
-              <p className="text-sm text-gray-600">
-                Assets Count:{" "}
-                <b className="text-gray-800">
-                  {filteredAssets.length}
-                </b>
-              </p>
-
-              <p className="text-sm text-gray-600 mt-2">
-                Best Performer:{" "}
-                <b className="text-green-600">
-                  {bestPerformer}
-                </b>
-              </p>
-            </div>
-          </div>
-
-          {/* CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
-            {filteredAssets.map((asset) => (
-              <PortfolioCard key={asset.id} asset={asset} />
-            ))}
-          </div>
-
-          {/* TABLE */}
-          <PortfolioTable assets={filteredAssets} />
-        </>
+          {activeTab === "orders" && <OrdersView />}
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 const StockInvestment = require("../models/StockInvestmentModel");
 const SIPInvestment = require("../models/SIPInvestmentModel");
 const IPOInvestment = require("../models/IPOinvestmentModel");
+const Transaction = require("../models/TransactionModel"); // ✅ NEW
 
 /* ====================================================== */
 /* 🔥 GROUP STOCK INVESTMENTS */
@@ -8,12 +9,12 @@ const groupStocks = (data) => {
   const map = {};
 
   data.forEach((item) => {
-    const key = item.symbol; // ✅ FIX
+    const key = item.symbol;
 
     if (!map[key]) {
       map[key] = {
         assetType: "stock",
-        assetCode: item.symbol, // ✅ FIX
+        assetCode: item.symbol,
         assetName: item.companyName,
         totalQuantity: 0,
         totalInvestment: 0,
@@ -40,13 +41,13 @@ const groupSIPs = (data) => {
   const map = {};
 
   data.forEach((item) => {
-    const key = item.assetCode; // ✅ FIX
+    const key = item.assetCode;
 
     if (!map[key]) {
       map[key] = {
         assetType: "sip",
-        assetCode: item.assetCode, // ✅ FIX
-        assetName: item.assetName, // ✅ FIX
+        assetCode: item.assetCode,
+        assetName: item.assetName,
         totalInvestment: 0,
         totalInstallments: 0,
       };
@@ -105,10 +106,11 @@ const getPortfolio = async (req, res) => {
       });
     }
 
-    const [stocks, sips, ipos] = await Promise.all([
+    const [stocks, sips, ipos, transactions] = await Promise.all([
       StockInvestment.find({ userEmail: email }),
       SIPInvestment.find({ userEmail: email }),
       IPOInvestment.find({ userEmail: email }),
+      Transaction.find({ userEmail: email }).sort({ createdAt: -1 }), // ✅ NEW
     ]);
 
     const groupedStocks = groupStocks(stocks);
@@ -140,6 +142,7 @@ const getPortfolio = async (req, res) => {
         sips: groupedSIPs,
         ipos: groupedIPOs,
         all: allAssets,
+        transactions, // ✅ IMPORTANT
       },
     });
   } catch (error) {

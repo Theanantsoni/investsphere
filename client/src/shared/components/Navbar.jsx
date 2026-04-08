@@ -5,6 +5,7 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
+
 import {
   Home,
   TrendingUp,
@@ -19,7 +20,8 @@ import {
   User,
   Settings,
   Flag,
-  Briefcase, // 🔥 NEW ICON (Portfolio)
+  Briefcase,
+  Bell,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -31,27 +33,24 @@ const Navbar = () => {
   const location = useLocation();
   const dropdownRef = useRef();
 
-  /* ================= USER STATE SYNC ================= */
-
+  /* ================= USER STATE ================= */
   useEffect(() => {
     try {
       const storedUser = JSON.parse(
         localStorage.getItem("investsphere_user")
       );
 
-      if (storedUser && storedUser.email) {
+      if (storedUser?.email) {
         setUser(storedUser);
       } else {
         setUser(null);
       }
-    } catch (error) {
-      console.log("User parse error");
+    } catch {
       setUser(null);
     }
   }, [location.pathname]);
 
   /* ================= CLOSE DROPDOWN ================= */
-
   useEffect(() => {
     const handleClick = (e) => {
       if (!dropdownRef.current?.contains(e.target)) {
@@ -64,37 +63,51 @@ const Navbar = () => {
   }, []);
 
   /* ================= LOGOUT ================= */
-
   const logout = () => {
     localStorage.removeItem("investsphere_user");
     navigate("/login");
   };
 
   /* ================= NAV ITEMS ================= */
-
   const navItems = [
-    { name: "Home", path: "/", icon: <Home size={18} /> },
-    { name: "SIP", path: "/sip", icon: <TrendingUp size={18} /> },
-    { name: "Stocks", path: "/stock", icon: <BarChart3 size={18} /> },
-    { name: "IPO", path: "/ipo", icon: <Landmark size={18} /> },
-
-    // 🔥 NEW (IMPORTANT)
+    {
+      name: "Home",
+      path: "/",
+      icon: <Home size={18} className="text-indigo-500" />,
+    },
+    {
+      name: "SIP",
+      path: "/sip",
+      icon: <TrendingUp size={18} className="text-green-500" />,
+    },
+    {
+      name: "Stocks",
+      path: "/stock",
+      icon: <BarChart3 size={18} className="text-yellow-500" />,
+    },
+    {
+      name: "IPO",
+      path: "/ipo",
+      icon: <Landmark size={18} className="text-purple-500" />,
+    },
     {
       name: "Portfolio",
       path: "/portfolio",
-      icon: <Briefcase size={18} />,
+      icon: <Briefcase size={18} className="text-blue-600" />,
     },
-
-    { name: "Watchlist", path: "/watchlist", icon: <Star size={18} /> },
+    {
+      name: "Watchlist",
+      path: "/watchlist",
+      icon: <Star size={18} className="text-pink-500" />,
+    },
     {
       name: "Market News",
       path: "/market-news",
-      icon: <Newspaper size={18} />,
+      icon: <Newspaper size={18} className="text-orange-500" />,
     },
   ];
 
   /* ================= PROFILE IMAGE ================= */
-
   const profileImage =
     user?.profileImage ||
     `https://ui-avatars.com/api/?name=${user?.name || "User"}`;
@@ -102,6 +115,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
+
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <img
@@ -109,42 +123,51 @@ const Navbar = () => {
             alt="InvestSphere Logo"
             className="w-11 h-11 object-contain group-hover:scale-105 transition"
           />
-          <span className="text-xl md:text-2xl font-bold tracking-wide text-gray-800">
+          <span className="text-xl md:text-2xl font-bold text-gray-800">
             Invest<span className="text-blue-600">Sphere</span>
           </span>
         </Link>
 
         {/* DESKTOP NAV */}
-        <div className="hidden md:flex items-center gap-8 text-gray-700 font-medium">
+        <div className="hidden md:flex items-center gap-6 text-gray-700 font-medium">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `relative flex items-center gap-2 transition group ${
-                  isActive ? "text-blue-600" : "hover:text-blue-600"
+                `flex items-center gap-2 transition ${
+                  isActive
+                    ? "text-blue-600"
+                    : "hover:text-blue-600"
                 }`
               }
             >
-              <span className="group-hover:scale-110 transition">
-                {item.icon}
-              </span>
-
+              {item.icon}
               {item.name}
-
-              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
             </NavLink>
           ))}
         </div>
 
-        {/* PROFILE */}
-        <div
-          className="hidden md:flex items-center gap-6 relative"
-          ref={dropdownRef}
-        >
+        {/* RIGHT SECTION */}
+        <div className="hidden md:flex items-center gap-5 relative" ref={dropdownRef}>
+
+          {/* 🔔 ALERT ICON */}
+          {user && (
+            <button
+              onClick={() => navigate("/alerts")}
+              className="relative"
+            >
+              <Bell
+                size={20}
+                className="text-red-500 hover:scale-110 transition"
+              />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+            </button>
+          )}
+
+          {/* PROFILE */}
           {user ? (
             <div className="relative">
-              {/* PROFILE BUTTON */}
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
                 className="flex items-center gap-3 hover:bg-gray-100 px-3 py-2 rounded-xl transition"
@@ -156,25 +179,17 @@ const Navbar = () => {
                   </p>
                 </div>
 
-                {/* IMAGE */}
-                <div className="relative">
-                  <img
-                    src={profileImage}
-                    alt="profile"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 shadow-sm"
-                  />
-
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
-                </div>
+                <img
+                  src={profileImage}
+                  alt="profile"
+                  className="w-10 h-10 rounded-full border-2 border-blue-500"
+                />
               </button>
 
-              {/* DROPDOWN */}
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-60 bg-white border border-gray-200 shadow-2xl rounded-xl overflow-hidden">
+                <div className="absolute right-0 mt-3 w-60 bg-white border shadow-xl rounded-xl overflow-hidden">
                   <div className="px-5 py-4 border-b bg-gray-50">
-                    <p className="font-semibold text-gray-800">
-                      {user.name}
-                    </p>
+                    <p className="font-semibold">{user.name}</p>
                     <p className="text-xs text-gray-500">
                       {user.email}
                     </p>
@@ -182,25 +197,25 @@ const Navbar = () => {
 
                   <Link
                     to="/profile"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
+                    className="flex gap-3 px-5 py-3 hover:bg-gray-50"
                   >
-                    <User size={18} />
+                    <User size={18} className="text-blue-500" />
                     Profile
                   </Link>
 
                   <Link
                     to="/settings"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
+                    className="flex gap-3 px-5 py-3 hover:bg-gray-50"
                   >
-                    <Settings size={18} />
+                    <Settings size={18} className="text-gray-600" />
                     Settings
                   </Link>
 
                   <Link
                     to="/send-report"
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50"
+                    className="flex gap-3 px-5 py-3 hover:bg-gray-50"
                   >
-                    <Flag size={18} />
+                    <Flag size={18} className="text-orange-500" />
                     Send Report
                   </Link>
 
@@ -208,7 +223,7 @@ const Navbar = () => {
 
                   <button
                     onClick={logout}
-                    className="flex items-center gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full text-left"
+                    className="flex gap-3 px-5 py-3 hover:bg-red-50 text-red-600 w-full"
                   >
                     <LogOut size={18} />
                     Logout
@@ -219,7 +234,7 @@ const Navbar = () => {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm"
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg"
             >
               <LogIn size={16} />
               Login
@@ -230,11 +245,35 @@ const Navbar = () => {
         {/* MOBILE BUTTON */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-gray-700"
+          className="md:hidden"
         >
           {isOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
+
+      {/* MOBILE MENU */}
+      {isOpen && (
+        <div className="md:hidden px-6 pb-4 space-y-4">
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.path}
+              className="flex items-center gap-3 text-gray-700"
+            >
+              {item.icon}
+              {item.name}
+            </Link>
+          ))}
+
+          <Link
+            to="/alerts"
+            className="flex items-center gap-3 text-red-500"
+          >
+            <Bell size={18} />
+            Alerts
+          </Link>
+        </div>
+      )}
     </nav>
   );
 };

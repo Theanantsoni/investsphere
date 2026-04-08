@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const helmet = require("helmet");
 
+/* ================= ENV ================= */
 require("dotenv").config({
   path: path.resolve(__dirname, "../.env"),
 });
@@ -10,10 +12,10 @@ require("dotenv").config({
    IMPORTS
 ====================================================== */
 
+/* ================= DB ================= */
 const connectDB = require("./config/db");
 
 /* ================= ROUTES ================= */
-
 const authRoutes = require("./routes/authRoutes");
 const ipoRoutes = require("./routes/ipoRoutes");
 const stockRoutes = require("./routes/stockRoutes");
@@ -31,9 +33,9 @@ const transactionRoutes = require("./routes/transactionRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const ipoInvestmentRoutes = require("./routes/ipoInvestmentRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
+const walletRoutes = require("./routes/walletRoutes");
 
 /* ================= CONTROLLERS ================= */
-
 const {
   getTicker,
   getMarketHistory,
@@ -43,7 +45,6 @@ const { getStockDetail } = require("./controllers/stockController");
 const { getMarketNews } = require("./controllers/newsController");
 
 /* ================= SERVICES ================= */
-
 const initWebSocket = require("./services/websocketService");
 
 /* ======================================================
@@ -55,21 +56,36 @@ const app = express();
 /* ======================================================
    DATABASE CONNECTION
 ====================================================== */
-
 connectDB();
 
 /* ======================================================
-   MIDDLEWARE
+   GLOBAL MIDDLEWARE
 ====================================================== */
 
+/* ================= SECURITY ================= */
+app.use(helmet());
+
+/* ================= CORS ================= */
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
-  })
+  }),
 );
 
-app.use(express.json());
+/* ================= BODY PARSER ================= */
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+
+/* ======================================================
+   REQUEST LOGGER (DEV ONLY)
+====================================================== */
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log(`➡️ ${req.method} ${req.url}`);
+    next();
+  });
+}
 
 /* ======================================================
    API ROUTES
@@ -126,6 +142,9 @@ app.use("/api/transactions", transactionRoutes);
 /* ================= PORTFOLIO ================= */
 app.use("/api/portfolio", portfolioRoutes);
 
+/* ================= WALLET ================= */
+app.use("/api/wallet", walletRoutes);
+
 /* ======================================================
    LEGACY / EXTRA ROUTES
 ====================================================== */
@@ -136,9 +155,20 @@ app.get("/api/stock/:symbol", getStockDetail);
 app.get("/api/market-news", getMarketNews);
 
 /* ======================================================
+   HEALTH CHECK
+====================================================== */
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is healthy ✅",
+    uptime: process.uptime(),
+    timestamp: new Date(),
+  });
+});
+
+/* ======================================================
    ROOT ROUTE
 ====================================================== */
-
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -147,15 +177,24 @@ app.get("/", (req, res) => {
 });
 
 /* ======================================================
+   404 HANDLER
+====================================================== */
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+/* ======================================================
    GLOBAL ERROR HANDLER
 ====================================================== */
-
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
+  console.error("🔥 Server Error:", err);
 
-  res.status(500).json({
+  res.status(err.status || 500).json({
     success: false,
-    message: "Internal Server Error",
+    message: err.message || "Internal Server Error",
   });
 });
 
@@ -169,11 +208,22 @@ const server = app.listen(PORT, () => {
   console.log("====================================");
   console.log("🚀 InvestSphere Server Running");
   console.log(`🌐 http://localhost:${PORT}`);
+  console.log(`🛠 ENV: ${process.env.NODE_ENV || "development"}`);
   console.log("====================================");
 });
 
 /* ======================================================
    WEBSOCKET INITIALIZATION
 ====================================================== */
-
 initWebSocket(server);
+
+/* ======================================================
+   GRACEFUL SHUTDOWN (IMPORTANT)
+====================================================== */
+process.on("SIGINT", () => {
+  console.log("🛑 Server shutting down...");
+  server.close(() => {
+    console.log("✅ Server closed");
+    process.exit(0);
+  });
+});

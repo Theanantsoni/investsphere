@@ -1,16 +1,28 @@
 const bcrypt = require("bcryptjs");
 const Register = require("../models/Register");
 
-// ==============================
-// CHANGE PASSWORD
-// ==============================
+/* ======================================================
+ CHANGE PASSWORD
+====================================================== */
 exports.changePassword = async (req, res) => {
   try {
-    const userId = req.user.id;
+    /* ================= USER ================= */
+    const userId = req.user?.id;
 
-    const { currentPassword, newPassword } = req.body;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized user",
+      });
+    }
 
-    // VALIDATION
+    /* ================= INPUT ================= */
+    let { currentPassword, newPassword } = req.body;
+
+    currentPassword = currentPassword?.trim();
+    newPassword = newPassword?.trim();
+
+    /* ================= VALIDATION ================= */
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
         success: false,
@@ -25,7 +37,14 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    // 🔥 FIX: INCLUDE PASSWORD
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be different from current password",
+      });
+    }
+
+    /* ================= FETCH USER ================= */
     const user = await Register.findById(userId).select("+password");
 
     if (!user) {
@@ -35,19 +54,15 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    // 🔥 SAFETY CHECK
     if (!user.password) {
       return res.status(400).json({
         success: false,
-        message: "Password not found",
+        message: "User password not set",
       });
     }
 
-    // MATCH CURRENT PASSWORD
-    const isMatch = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
+    /* ================= VERIFY CURRENT PASSWORD ================= */
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -56,23 +71,26 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    // HASH NEW PASSWORD
+    /* ================= HASH NEW PASSWORD ================= */
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
+    /* ================= SAVE ================= */
     user.password = hashedPassword;
     await user.save();
 
+    /* ================= RESPONSE ================= */
     return res.status(200).json({
       success: true,
       message: "Password updated successfully",
     });
+
   } catch (error) {
     console.error("SECURITY ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Internal server error",
     });
   }
 };
