@@ -26,21 +26,25 @@ const getFullPortfolio = async (userEmail) => {
       const currentValue = calculateStockCurrentValue(item);
 
       return {
+        id: item._id,
         type: "stock",
         name: item.companyName,
         invested: item.totalAmount,
         current: currentValue,
         profit: currentValue - item.totalAmount,
+        quantity: item.quantity || 1,
       };
     });
 
     /* ================= SIP ================= */
     const sipData = sips.map((item) => ({
+      id: item._id,
       type: "sip",
       name: item.assetName,
       invested: item.totalInvested,
       current: item.expectedReturn,
       profit: item.expectedProfit,
+      quantity: item.installments || 1,
     }));
 
     /* ================= IPO ================= */
@@ -48,11 +52,13 @@ const getFullPortfolio = async (userEmail) => {
       const currentValue = calculateIPOCurrentValue(item);
 
       return {
+        id: item._id,
         type: "ipo",
         name: item.companyName,
         invested: item.totalAmount,
         current: currentValue,
         profit: currentValue - item.totalAmount,
+        quantity: item.lots || 1,
       };
     });
 

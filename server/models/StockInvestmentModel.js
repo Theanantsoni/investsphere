@@ -1,13 +1,45 @@
 const mongoose = require("mongoose");
 
+/* ====================================================== */
 const stockInvestmentSchema = new mongoose.Schema(
   {
-    userEmail: { type: String, required: true, trim: true, lowercase: true },
-    username: { type: String, required: true, trim: true },
+    /* ================= USER ================= */
+    userEmail: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    username: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-    symbol: { type: String, required: true, uppercase: true, trim: true },
-    companyName: { type: String, required: true, trim: true },
+    /* ================= CORE ================= */
+    symbol: {
+      type: String,
+      required: true,
+      uppercase: true,
+      trim: true,
+    },
+    companyName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
+    /* ================= STANDARDIZATION ================= */
+    assetCode: {
+      type: String,
+      trim: true,
+    },
+    assetName: {
+      type: String,
+      trim: true,
+    },
+
+    /* ================= ORDER ================= */
     orderType: {
       type: String,
       enum: ["market", "limit"],
@@ -26,17 +58,46 @@ const stockInvestmentSchema = new mongoose.Schema(
       default: "completed",
     },
 
-    quantity: { type: Number, required: true, min: 1 },
-    price: { type: Number, required: true, min: 0 },
-    totalAmount: { type: Number, required: true, min: 0 },
+    /* ================= INVESTMENT ================= */
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    currentPrice: {
+      type: Number,
+      default: 0,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
   },
   { timestamps: true }
 );
 
+/* ======================================================
+PRE SAVE (FIXED - NO next)
+====================================================== */
+stockInvestmentSchema.pre("save", function () {
+  this.assetCode = this.symbol;
+  this.assetName = this.companyName;
+});
+
+/* ====================================================== */
 stockInvestmentSchema.index({ userEmail: 1, createdAt: -1 });
 stockInvestmentSchema.index({ symbol: 1 });
 
-/* ✅ FIX */
+/* ====================================================== */
 module.exports =
   mongoose.models.StockInvestment ||
   mongoose.model("StockInvestment", stockInvestmentSchema);

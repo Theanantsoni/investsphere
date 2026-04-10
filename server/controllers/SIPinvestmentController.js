@@ -14,6 +14,8 @@ const addSIPinvestment = async (req, res) => {
       assetName,
       amount,
       duration,
+      installments, // 🔥 FIX: get from frontend
+      quantity,     // 🔥 optional sync
       totalInvested,
       expectedReturn,
       expectedProfit,
@@ -28,6 +30,7 @@ const addSIPinvestment = async (req, res) => {
       !assetCode ||
       !amount ||
       !duration ||
+      !installments || // 🔥 REQUIRED FIX
       totalInvested === undefined ||
       expectedReturn === undefined ||
       expectedProfit === undefined
@@ -48,6 +51,11 @@ const addSIPinvestment = async (req, res) => {
       type: "sip",
       amount: Number(amount),
       duration: Number(duration),
+
+      /* 🔥 FIX CORE */
+      installments: Number(installments),
+      quantity: Number(quantity || installments),
+
       totalInvested: Number(totalInvested),
       expectedReturn: Number(expectedReturn),
       expectedProfit: Number(expectedProfit),
@@ -71,12 +79,19 @@ const addSIPinvestment = async (req, res) => {
       });
     }
 
+    if (safeData.installments <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Installments must be valid",
+      });
+    }
+
     /* ================= CREATE SIP ================= */
 
     const investment = await SIPinvestment.create(safeData);
 
     /* ======================================================
-       CREATE TRANSACTION (🔥 IMPORTANT)
+       CREATE TRANSACTION
     ====================================================== */
 
     await createTransaction({
@@ -87,7 +102,7 @@ const addSIPinvestment = async (req, res) => {
       assetName: safeData.assetName,
       type: "BUY",
       orderType: "sip",
-      quantity: 1, // SIP me quantity nahi hota → 1 logical unit
+      quantity: safeData.quantity,
       price: safeData.amount,
       totalAmount: safeData.totalInvested,
       referenceId: investment._id,

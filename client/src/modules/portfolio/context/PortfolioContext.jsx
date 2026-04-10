@@ -8,14 +8,10 @@ import React, {
 import axios from "axios";
 import { PORTFOLIO_API } from "../constants/portfolioConstants";
 
-/* ======================================================
- CONTEXT
-====================================================== */
+/* ====================================================== */
 const PortfolioContext = createContext();
 
-/* ======================================================
- PROVIDER
-====================================================== */
+/* ====================================================== */
 export const PortfolioProvider = ({ children }) => {
   const [assets, setAssets] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -32,9 +28,7 @@ export const PortfolioProvider = ({ children }) => {
     }
   }, []);
 
-  /* ======================================================
- FETCH PORTFOLIO + WALLET (🔥 MERGED)
-====================================================== */
+  /* ====================================================== */
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
@@ -47,14 +41,9 @@ export const PortfolioProvider = ({ children }) => {
         return;
       }
 
-      /* ================= API CALLS ================= */
       const [portfolioRes, walletRes] = await Promise.all([
-        axios.get(
-          `${PORTFOLIO_API.BASE}/portfolio?email=${user.email}`
-        ),
-        axios.get(
-          `${PORTFOLIO_API.BASE}/wallet?email=${user.email}`
-        ),
+        axios.get(`${PORTFOLIO_API.BASE}/portfolio?email=${user.email}`),
+        axios.get(`${PORTFOLIO_API.BASE}/wallet?email=${user.email}`),
       ]);
 
       if (!portfolioRes.data?.success) {
@@ -63,14 +52,11 @@ export const PortfolioProvider = ({ children }) => {
 
       const { summary: apiSummary, data } = portfolioRes.data;
 
-      /* ================= MERGE TRANSACTIONS ================= */
+      /* ================= TRANSACTIONS ================= */
       const portfolioTx = data?.transactions || [];
       const walletTx = walletRes?.data?.wallet?.transactions || [];
 
-      const mergedTransactions = [
-        ...portfolioTx,
-        ...walletTx,
-      ]
+      const mergedTransactions = [...portfolioTx, ...walletTx]
         .map((t) => ({
           ...t,
           assetType: t.assetType || "wallet",
@@ -79,156 +65,106 @@ export const PortfolioProvider = ({ children }) => {
           createdAt: t.createdAt || t.date || new Date(),
         }))
         .sort(
-          (a, b) =>
-            new Date(b.createdAt) - new Date(a.createdAt)
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
 
       setTransactions(mergedTransactions);
 
-      /* ======================================================
- NORMALIZE DATA
-====================================================== */
+      /* ================= NORMALIZER ================= */
+      const normalize = (item) => {
+        const type = item.assetType || item.type || "unknown";
 
-      /* 🔹 STOCKS */
-      const stockAssets =
-        data?.stocks?.map((item) => {
-          const currentValue = item.totalInvestment * 1.1;
-          const profit = currentValue - item.totalInvestment;
-          const percentage =
-            item.totalInvestment > 0
-              ? (profit / item.totalInvestment) * 100
-              : 0;
+        return {
+          _id: item._id,
+          assetCode: item.assetCode || item.code || item.symbol || "",
+          assetName: item.assetName || item.name || "",
+          name: item.assetName || item.name || "",
+          assetType: type,
+          type: type,
 
-          return {
-            id: item.assetCode,
-            name: item.assetName,
-            type: "stock",
-            invested: item.totalInvestment,
-            current: currentValue,
-            profit,
-            percentage: Number(percentage.toFixed(2)),
-            quantity: item.totalQuantity,
-            avgPrice: item.avgPrice,
-          };
-        }) || [];
+          invested: Number(item.invested || item.totalInvestment || 0),
+          current: Number(item.current || 0),
+          profit: Number(item.profit || 0),
 
-      /* 🔹 SIP */
-      const sipAssets =
-        data?.sips?.map((item) => {
-          const currentValue = item.totalInvestment * 1.08;
-          const profit = currentValue - item.totalInvestment;
-          const percentage =
-            item.totalInvestment > 0
-              ? (profit / item.totalInvestment) * 100
-              : 0;
+          percentage:
+            item.invested > 0
+              ? Number(((item.profit / item.invested) * 100).toFixed(2))
+              : 0,
 
-          return {
-            id: item.assetCode,
-            name: item.assetName,
-            type: "sip",
-            invested: item.totalInvestment,
-            current: currentValue,
-            profit,
-            percentage: Number(percentage.toFixed(2)),
-            installments: item.totalInstallments,
-          };
-        }) || [];
+          quantity: Number(
+            item.quantity ||
+              item.totalShares ||
+              item.installments ||
+              0
+          ),
 
-      /* 🔹 IPO */
-      const ipoAssets =
-        data?.ipos?.map((item) => {
-          const currentValue = item.totalInvestment * 1.15;
-          const profit = currentValue - item.totalInvestment;
-          const percentage =
-            item.totalInvestment > 0
-              ? (profit / item.totalInvestment) * 100
-              : 0;
+          avgPrice: Number(item.avgPrice || item.price || 0),
 
-          return {
-            id: item.assetCode,
-            name: item.assetName,
-            type: "ipo",
-            invested: item.totalInvestment,
-            current: currentValue,
-            profit,
-            percentage: Number(percentage.toFixed(2)),
-            shares: item.totalShares,
-            avgPrice: item.avgPrice,
-            status: item.status,
-          };
-        }) || [];
+          status: item.status || "active",
+        };
+      };
 
-      /* ================= MERGE ================= */
       const mergedAssets = [
-        ...stockAssets,
-        ...sipAssets,
-        ...ipoAssets,
+        ...(data?.stocks || []).map(normalize),
+        ...(data?.sips || []).map(normalize),
+        ...(data?.ipos || []).map(normalize),
       ];
 
-      /* ======================================================
- TOTAL CALCULATIONS
-====================================================== */
-      let totalInvested = 0;
-      let currentValue = 0;
+      /* ================= TOTAL ================= */
+      const totalInvested = mergedAssets.reduce(
+        (sum, i) => sum + (i.invested || 0),
+        0
+      );
 
-      mergedAssets.forEach((item) => {
-        totalInvested += item.invested;
-        currentValue += item.current;
-      });
+      const currentValue = mergedAssets.reduce(
+        (sum, i) => sum + (i.current || 0),
+        0
+      );
 
       const totalProfit = currentValue - totalInvested;
 
       const profitPercentage =
         totalInvested > 0
-          ? (totalProfit / totalInvested) * 100
+          ? Number(((totalProfit / totalInvested) * 100).toFixed(2))
           : 0;
 
-      /* ======================================================
- ALLOCATION
-====================================================== */
+      /* ================= ALLOCATION ================= */
       const grouped = {
         stock: 0,
         sip: 0,
         ipo: 0,
       };
 
-      mergedAssets.forEach((item) => {
-        grouped[item.type] += item.current;
+      mergedAssets.forEach((i) => {
+        if (!grouped[i.assetType]) return;
+        grouped[i.assetType] += i.current || 0;
       });
 
       const allocationData = Object.keys(grouped).map((key) => ({
         label: key.toUpperCase(),
         value:
           currentValue > 0
-            ? Number(
-                ((grouped[key] / currentValue) * 100).toFixed(2)
-              )
+            ? Number(((grouped[key] / currentValue) * 100).toFixed(2))
             : 0,
       }));
 
-      /* ======================================================
- SET STATE
-====================================================== */
+      /* ================= SET STATE ================= */
       setAssets(mergedAssets);
 
       setSummary({
         totalInvested,
         currentValue,
         totalProfit,
-        profitPercentage: Number(profitPercentage.toFixed(2)),
-        totalAssets:
-          apiSummary?.totalAssets || mergedAssets.length,
-        totalStocks:
-          apiSummary?.totalStocks || stockAssets.length,
-        totalSIPs:
-          apiSummary?.totalSIPs || sipAssets.length,
-        totalIPOs:
-          apiSummary?.totalIPOs || ipoAssets.length,
+        profitPercentage,
+        totalAssets: apiSummary?.totalAssets || mergedAssets.length,
+        totalStocks: apiSummary?.totalStocks || 0,
+        totalSIPs: apiSummary?.totalSIPs || 0,
+        totalIPOs: apiSummary?.totalIPOs || 0,
       });
 
       setAllocation(allocationData);
     } catch (error) {
-      console.error("Portfolio Context Error:", error.message);
+      console.error("Portfolio Error:", error.message);
       setAssets([]);
       setSummary(null);
       setAllocation([]);
@@ -238,22 +174,20 @@ export const PortfolioProvider = ({ children }) => {
     }
   };
 
-  /* ======================================================
- INIT LOAD
-====================================================== */
+  /* ================= EFFECT ================= */
   useEffect(() => {
     fetchPortfolio();
   }, [user?.email]);
 
-  /* ======================================================
- CONTEXT VALUE
-====================================================== */
+  /* ================= CONTEXT VALUE ================= */
   const value = {
+    user,
     assets,
     summary,
     allocation,
     transactions,
     loading,
+    fetchPortfolio,
     refreshPortfolio: fetchPortfolio,
   };
 
@@ -264,9 +198,7 @@ export const PortfolioProvider = ({ children }) => {
   );
 };
 
-/* ======================================================
- HOOK
-====================================================== */
+/* ====================================================== */
 export const usePortfolioContext = () => {
   const context = useContext(PortfolioContext);
 

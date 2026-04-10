@@ -1,10 +1,10 @@
 const StockInvestment = require("../models/StockInvestmentModel");
-const SIPInvestment = require("../models/SIPInvestmentModel");
+const SIPInvestment = require("../models/SIPinvestmentModel");
 const IPOInvestment = require("../models/IPOinvestmentModel");
-const Transaction = require("../models/TransactionModel"); // ✅ NEW
+const Transaction = require("../models/TransactionModel");
 
 /* ====================================================== */
-/* 🔥 GROUP STOCK INVESTMENTS */
+/* 🔥 GROUP STOCK */
 const groupStocks = (data) => {
   const map = {};
 
@@ -13,30 +13,44 @@ const groupStocks = (data) => {
 
     if (!map[key]) {
       map[key] = {
+        _id: item._id,
         assetType: "stock",
         assetCode: item.symbol,
         assetName: item.companyName,
-        totalQuantity: 0,
+        quantity: 0,
         totalInvestment: 0,
-        avgPrice: 0,
+        currentPrice: item.currentPrice || item.price || 0,
       };
     }
 
-    map[key].totalQuantity += item.quantity;
-    map[key].totalInvestment += item.totalAmount;
+    map[key].quantity += item.quantity || 0;
+    map[key].totalInvestment += item.totalAmount || 0;
+
+    map[key].currentPrice =
+      item.currentPrice || item.price || map[key].currentPrice;
   });
 
-  return Object.values(map).map((item) => ({
-    ...item,
-    avgPrice:
-      item.totalQuantity > 0
-        ? item.totalInvestment / item.totalQuantity
-        : 0,
-  }));
+  return Object.values(map).map((item) => {
+    const avgPrice =
+      item.quantity > 0
+        ? item.totalInvestment / item.quantity
+        : 0;
+
+    const current =
+      item.quantity * (item.currentPrice || avgPrice);
+
+    return {
+      ...item,
+      avgPrice,
+      invested: item.totalInvestment,
+      current,
+      profit: current - item.totalInvestment,
+    };
+  });
 };
 
 /* ====================================================== */
-/* 🔥 GROUP SIP INVESTMENTS */
+/* 🔥 GROUP SIP (FIXED) */
 const groupSIPs = (data) => {
   const map = {};
 
@@ -45,23 +59,38 @@ const groupSIPs = (data) => {
 
     if (!map[key]) {
       map[key] = {
+        _id: item._id,
         assetType: "sip",
         assetCode: item.assetCode,
         assetName: item.assetName,
+        quantity: 0,
         totalInvestment: 0,
-        totalInstallments: 0,
       };
     }
 
-    map[key].totalInvestment += item.amount;
-    map[key].totalInstallments += 1;
+    const qty = item.quantity || item.installments || 1;
+
+    map[key].quantity += qty;
+    map[key].totalInvestment += item.totalInvested || item.amount || 0;
   });
 
-  return Object.values(map);
+  return Object.values(map).map((item) => {
+    const invested = item.totalInvestment;
+    const current = invested;
+
+    return {
+      ...item,
+      avgPrice:
+        item.quantity > 0 ? invested / item.quantity : 0,
+      invested,
+      current,
+      profit: current - invested,
+    };
+  });
 };
 
 /* ====================================================== */
-/* 🔥 GROUP IPO INVESTMENTS */
+/* 🔥 GROUP IPO */
 const groupIPOs = (data) => {
   const map = {};
 
@@ -70,31 +99,49 @@ const groupIPOs = (data) => {
 
     if (!map[key]) {
       map[key] = {
+        _id: item._id,
         assetType: "ipo",
         assetCode: item.ipoCode,
         assetName: item.companyName,
-        totalShares: 0,
+        quantity: 0,
         totalInvestment: 0,
-        avgPrice: 0,
-        status: item.status,
+        currentPrice:
+          item.currentPrice || item.issuePrice || item.price || 0,
       };
     }
 
-    map[key].totalShares += item.totalShares;
-    map[key].totalInvestment += item.totalAmount;
+    const qty = item.quantity || item.totalShares || 0;
+
+    map[key].quantity += qty;
+    map[key].totalInvestment += item.totalAmount || 0;
+
+    map[key].currentPrice =
+      item.currentPrice ||
+      item.issuePrice ||
+      item.price ||
+      map[key].currentPrice;
   });
 
-  return Object.values(map).map((item) => ({
-    ...item,
-    avgPrice:
-      item.totalShares > 0
-        ? item.totalInvestment / item.totalShares
-        : 0,
-  }));
+  return Object.values(map).map((item) => {
+    const avgPrice =
+      item.quantity > 0
+        ? item.totalInvestment / item.quantity
+        : 0;
+
+    const current =
+      item.quantity * (item.currentPrice || avgPrice);
+
+    return {
+      ...item,
+      avgPrice,
+      invested: item.totalInvestment,
+      current,
+      profit: current - item.totalInvestment,
+    };
+  });
 };
 
 /* ====================================================== */
-/* 🔥 GET FULL PORTFOLIO */
 const getPortfolio = async (req, res) => {
   try {
     const { email } = req.query;
@@ -107,10 +154,10 @@ const getPortfolio = async (req, res) => {
     }
 
     const [stocks, sips, ipos, transactions] = await Promise.all([
-      StockInvestment.find({ userEmail: email }),
-      SIPInvestment.find({ userEmail: email }),
-      IPOInvestment.find({ userEmail: email }),
-      Transaction.find({ userEmail: email }).sort({ createdAt: -1 }), // ✅ NEW
+      StockInvestment.find({ userEmail: email }).sort({ createdAt: 1 }),
+      SIPInvestment.find({ userEmail: email }).sort({ createdAt: 1 }),
+      IPOInvestment.find({ userEmail: email }).sort({ createdAt: 1 }),
+      Transaction.find({ userEmail: email }).sort({ createdAt: -1 }),
     ]);
 
     const groupedStocks = groupStocks(stocks);
@@ -124,14 +171,29 @@ const getPortfolio = async (req, res) => {
     ];
 
     const totalInvestment = allAssets.reduce(
-      (acc, item) => acc + (item.totalInvestment || 0),
+      (acc, i) => acc + (i.invested || 0),
       0
     );
+
+    const currentValue = allAssets.reduce(
+      (acc, i) => acc + (i.current || 0),
+      0
+    );
+
+    const totalProfit = currentValue - totalInvestment;
 
     return res.json({
       success: true,
       summary: {
-        totalInvestment,
+        totalInvested: totalInvestment,
+        currentValue,
+        totalProfit,
+        profitPercentage:
+          totalInvestment > 0
+            ? Number(
+                ((totalProfit / totalInvestment) * 100).toFixed(2)
+              )
+            : 0,
         totalAssets: allAssets.length,
         totalStocks: groupedStocks.length,
         totalSIPs: groupedSIPs.length,
@@ -142,7 +204,7 @@ const getPortfolio = async (req, res) => {
         sips: groupedSIPs,
         ipos: groupedIPOs,
         all: allAssets,
-        transactions, // ✅ IMPORTANT
+        transactions,
       },
     });
   } catch (error) {

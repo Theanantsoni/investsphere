@@ -40,10 +40,11 @@ const SIPInvest = ({ fund, user, onClose }) => {
       invested,
       returns: futureValue,
       profit: futureValue - invested,
+      months,
     };
   };
 
-  const { invested, returns, profit } = calculateReturns();
+  const { invested, returns, profit, months } = calculateReturns();
 
   /* ================= VALIDATION ================= */
 
@@ -88,6 +89,13 @@ const SIPInvest = ({ fund, user, onClose }) => {
         type: "sip",
         amount: Number(amount),
         duration: Number(years),
+
+        /* 🔥 FIX: REQUIRED FIELD */
+        installments: Number(months),
+
+        /* 🔥 OPTIONAL SAFE SYNC */
+        quantity: Number(months),
+
         totalInvested: Number(invested.toFixed(0)),
         expectedReturn: Number(returns.toFixed(0)),
         expectedProfit: Number(profit.toFixed(0)),

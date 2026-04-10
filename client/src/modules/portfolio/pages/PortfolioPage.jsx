@@ -24,38 +24,39 @@ const PortfolioPage = () => {
     allocation,
     loading,
     transactions,
+    fetchPortfolio, // ✅ IMPORTANT FIX
   } = usePortfolioContext();
 
   const [activeTab, setActiveTab] = useState("portfolio");
 
   const tabs = [
-    "portfolio",
-    "transactions",
-    "wallet",
-    "analytics",
-    "pnl",
-    "orders",
+    { key: "portfolio", label: "Portfolio" },
+    { key: "transactions", label: "Transactions" },
+    { key: "wallet", label: "Wallet" },
+    { key: "analytics", label: "Analytics" },
+    { key: "pnl", label: "P&L" },
+    { key: "orders", label: "Orders" },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 px-3 sm:px-4 md:px-6 py-4">
-
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 px-3 sm:px-4 md:px-6 py-4">
+      
       {/* ================= HEADER ================= */}
       <PortfolioHeader />
 
       {/* ================= TABS ================= */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 mt-2">
+      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 mt-4">
         {tabs.map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 ${
-              activeTab === tab
-                ? "bg-blue-600 text-white shadow-md scale-105"
-                : "bg-white text-gray-600 border hover:bg-gray-100"
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-3 sm:px-5 py-2 rounded-xl text-sm sm:text-base font-medium transition-all duration-200 shadow-sm ${
+              activeTab === tab.key
+                ? "bg-blue-600 text-white shadow-lg scale-105"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100 hover:shadow"
             }`}
           >
-            {tab === "pnl" ? "P&L" : tab}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -64,27 +65,35 @@ const PortfolioPage = () => {
       {loading ? (
         <PortfolioLoader />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fadeIn">
 
+          {/* ================= PORTFOLIO ================= */}
           {activeTab === "portfolio" && (
             <PortfolioView
               assets={assets}
               summary={summary}
               allocation={allocation}
+              fetchPortfolio={fetchPortfolio} // ✅ PASS FIX
             />
           )}
 
-          {/* ✅ UPDATED */}
+          {/* ================= TRANSACTIONS ================= */}
           {activeTab === "transactions" && (
             <TransactionsView transactions={transactions} />
           )}
 
+          {/* ================= WALLET ================= */}
           {activeTab === "wallet" && <WalletPage />}
 
+          {/* ================= ANALYTICS ================= */}
           {activeTab === "analytics" && <AnalyticsView />}
 
-          {activeTab === "pnl" && <PnLView summary={summary} />}
+          {/* ================= PNL ================= */}
+          {activeTab === "pnl" && (
+            <PnLView summary={summary} />
+          )}
 
+          {/* ================= ORDERS ================= */}
           {activeTab === "orders" && <OrdersView />}
         </div>
       )}

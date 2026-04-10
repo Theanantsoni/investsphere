@@ -27,7 +27,7 @@ const transactionSchema = new mongoose.Schema(
     },
 
     assetCode: {
-      type: String, // stock symbol / sip code
+      type: String,
       required: true,
       trim: true,
     },
@@ -76,9 +76,14 @@ const transactionSchema = new mongoose.Schema(
     },
 
     /* ================= EXTRA ================= */
+    executionPrice: {
+      type: Number,
+      default: 0,
+    },
+
     referenceId: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: "assetType", // dynamic reference (advanced)
+      refPath: "assetType",
     },
 
     notes: {
@@ -92,23 +97,16 @@ const transactionSchema = new mongoose.Schema(
 );
 
 /* ======================================================
- INDEXES (PERFORMANCE)
+ INDEXES
 ====================================================== */
 
-// 🔥 User history fast
 transactionSchema.index({ userEmail: 1, createdAt: -1 });
-
-// 🔥 Asset history
 transactionSchema.index({ assetCode: 1 });
 
 /* ======================================================
- MODEL
+ MODEL (SAFE EXPORT)
 ====================================================== */
 
-const Transaction = mongoose.model("Transaction", transactionSchema);
-
-/* ======================================================
- EXPORT
-====================================================== */
-
-module.exports = Transaction;
+module.exports =
+  mongoose.models.Transaction ||
+  mongoose.model("Transaction", transactionSchema);

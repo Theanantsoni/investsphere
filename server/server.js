@@ -35,6 +35,9 @@ const ipoInvestmentRoutes = require("./routes/ipoInvestmentRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 
+/* ================= NEW ORDER ROUTE ================= */
+const orderRoutes = require("./routes/orderRoutes");
+
 /* ================= CONTROLLERS ================= */
 const {
   getTicker,
@@ -144,6 +147,9 @@ app.use("/api/portfolio", portfolioRoutes);
 
 /* ================= WALLET ================= */
 app.use("/api/wallet", walletRoutes);
+
+/* ================= ORDER (SELL FEATURE) ================= */
+app.use("/api/orders", orderRoutes);
 
 /* ======================================================
    LEGACY / EXTRA ROUTES

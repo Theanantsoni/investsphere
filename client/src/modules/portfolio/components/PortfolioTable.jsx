@@ -8,13 +8,21 @@ import {
   getTypeLabel,
   getTypeColor,
 } from "../constants/portfolioConstants";
+import { usePortfolioContext } from "../context/PortfolioContext";
+
+/* ✅ FIXED IMPORT */
+import SellModal from "./SellModal";
 
 /* ======================================================
  COMPONENT
 ====================================================== */
-const PortfolioTable = ({ assets }) => {
+const PortfolioTable = ({ assets, fetchPortfolio }) => {
+  const { user } = usePortfolioContext();
+
   const [sortKey, setSortKey] = useState("invested");
   const [sortOrder, setSortOrder] = useState("desc");
+
+  const [selectedAsset, setSelectedAsset] = useState(null);
 
   /* ======================================================
  SORT HANDLER
@@ -46,12 +54,28 @@ const PortfolioTable = ({ assets }) => {
   }, [assets, sortKey, sortOrder]);
 
   /* ======================================================
+ OPEN SELL MODAL
+====================================================== */
+  const handleOpenSell = (asset) => {
+    if (!asset.quantity || asset.quantity <= 0) {
+      alert("❌ No quantity available");
+      return;
+    }
+    setSelectedAsset(asset);
+  };
+
+  /* ======================================================
  EMPTY STATE
 ====================================================== */
   if (!assets || assets.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow p-6 text-center text-gray-500">
-        No portfolio data available
+      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 text-center text-gray-500 border border-gray-100">
+        <p className="text-lg font-medium">
+          No portfolio data available
+        </p>
+        <p className="text-sm text-gray-400 mt-1">
+          Start investing to see your assets here
+        </p>
       </div>
     );
   }
@@ -60,114 +84,117 @@ const PortfolioTable = ({ assets }) => {
  RENDER
 ====================================================== */
   return (
-    <div className="bg-white rounded-2xl shadow overflow-hidden">
-      {/* TABLE WRAPPER */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          {/* HEADER */}
-          <thead className="bg-gray-100 text-gray-600 sticky top-0 z-10">
-            <tr>
-              <th className="p-3 text-left">Asset</th>
+    <>
+      <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
+            <thead className="bg-gradient-to-r from-gray-100 to-gray-50 text-gray-600 sticky top-0 z-10">
+              <tr>
+                <th className="p-4 text-left font-semibold">Asset</th>
+                <th className="p-4 text-center font-semibold">Type</th>
 
-              <th className="p-3 text-center">Type</th>
-
-              <th
-                className="p-3 text-center cursor-pointer select-none"
-                onClick={() => handleSort("invested")}
-              >
-                <div className="flex items-center justify-center gap-1">
-                  Invested <ArrowUpDown size={14} />
-                </div>
-              </th>
-
-              <th
-                className="p-3 text-center cursor-pointer select-none"
-                onClick={() => handleSort("current")}
-              >
-                <div className="flex items-center justify-center gap-1">
-                  Current <ArrowUpDown size={14} />
-                </div>
-              </th>
-
-              <th
-                className="p-3 text-center cursor-pointer select-none"
-                onClick={() => handleSort("profit")}
-              >
-                <div className="flex items-center justify-center gap-1">
-                  Profit <ArrowUpDown size={14} />
-                </div>
-              </th>
-            </tr>
-          </thead>
-
-          {/* BODY */}
-          <tbody>
-            {sortedAssets.map((item, index) => {
-              const isProfit = item.profit >= 0;
-
-              return (
-                <tr
-                  key={item.id || index}
-                  className="border-t hover:bg-gray-50 transition"
+                <th
+                  className="p-4 text-center cursor-pointer"
+                  onClick={() => handleSort("invested")}
                 >
-                  {/* NAME */}
-                  <td className="p-3 font-medium text-gray-800">
-                    {item.name}
-                  </td>
+                  <div className="flex items-center justify-center gap-1">
+                    Invested <ArrowUpDown size={14} />
+                  </div>
+                </th>
 
-                  {/* TYPE */}
-                  <td className="p-3 text-center">
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full text-white ${getTypeColor(
-                        item.type
-                      )}`}
-                    >
-                      {getTypeLabel(item.type)}
-                    </span>
-                  </td>
+                <th
+                  className="p-4 text-center cursor-pointer"
+                  onClick={() => handleSort("current")}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    Current <ArrowUpDown size={14} />
+                  </div>
+                </th>
 
-                  {/* INVESTED */}
-                  <td className="p-3 text-center">
-                    ₹
-                    {Number(item.invested).toLocaleString(
-                      "en-IN"
-                    )}
-                  </td>
+                <th
+                  className="p-4 text-center cursor-pointer"
+                  onClick={() => handleSort("profit")}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    Profit <ArrowUpDown size={14} />
+                  </div>
+                </th>
 
-                  {/* CURRENT */}
-                  <td className="p-3 text-center">
-                    ₹
-                    {Number(item.current).toLocaleString(
-                      "en-IN"
-                    )}
-                  </td>
+                <th className="p-4 text-center font-semibold">Qty</th>
+                <th className="p-4 text-center font-semibold">Action</th>
+              </tr>
+            </thead>
 
-                  {/* PROFIT */}
-                  <td
-                    className={`p-3 text-center font-semibold flex items-center justify-center gap-1 ${
-                      isProfit
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+            <tbody>
+              {sortedAssets.map((item, index) => {
+                const isProfit = item.profit >= 0;
+
+                return (
+                  <tr
+                    key={item._id || `${item.type}-${index}`}
+                    className="border-t hover:bg-gray-50/70 transition"
                   >
-                    {isProfit ? (
-                      <TrendingUp size={14} />
-                    ) : (
-                      <TrendingDown size={14} />
-                    )}
+                    <td className="p-4 font-medium">
+                      {item.assetName || item.name}
+                    </td>
 
-                    ₹
-                    {Number(item.profit).toLocaleString(
-                      "en-IN"
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    <td className="p-4 text-center">
+                      <span
+                        className={`text-xs px-3 py-1 rounded-full text-white ${getTypeColor(
+                          item.assetType || item.type
+                        )}`}
+                      >
+                        {getTypeLabel(item.assetType || item.type)}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-center">
+                      ₹{Number(item.invested).toLocaleString("en-IN")}
+                    </td>
+
+                    <td className="p-4 text-center">
+                      ₹{Number(item.current).toLocaleString("en-IN")}
+                    </td>
+
+                    <td
+                      className={`p-4 text-center ${
+                        isProfit ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      ₹{Number(item.profit).toLocaleString("en-IN")}
+                    </td>
+
+                    <td className="p-4 text-center">
+                      {item.quantity || 0}
+                    </td>
+
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleOpenSell(item)}
+                        disabled={!item.quantity}
+                        className="px-4 py-1.5 rounded-lg bg-red-500 text-white"
+                      >
+                        Sell
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* MODAL */}
+      {selectedAsset && (
+        <SellModal
+          asset={selectedAsset}
+          user={user}
+          onClose={() => setSelectedAsset(null)}
+          onSuccess={fetchPortfolio}
+        />
+      )}
+    </>
   );
 };
 
