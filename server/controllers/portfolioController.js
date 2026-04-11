@@ -19,15 +19,15 @@ const groupStocks = (data) => {
         assetName: item.companyName,
         quantity: 0,
         totalInvestment: 0,
-        currentPrice: item.currentPrice || item.price || 0,
+        currentPrice: Number(item.currentPrice || item.price || 0),
       };
     }
 
-    map[key].quantity += item.quantity || 0;
-    map[key].totalInvestment += item.totalAmount || 0;
+    map[key].quantity += Number(item.quantity || 0);
+    map[key].totalInvestment += Number(item.totalAmount || 0);
 
     map[key].currentPrice =
-      item.currentPrice || item.price || map[key].currentPrice;
+      Number(item.currentPrice || item.price || map[key].currentPrice);
   });
 
   return Object.values(map).map((item) => {
@@ -36,8 +36,9 @@ const groupStocks = (data) => {
         ? item.totalInvestment / item.quantity
         : 0;
 
-    const current =
-      item.quantity * (item.currentPrice || avgPrice);
+    const price = item.currentPrice > 0 ? item.currentPrice : avgPrice;
+
+    const current = item.quantity * price;
 
     return {
       ...item,
@@ -50,7 +51,7 @@ const groupStocks = (data) => {
 };
 
 /* ====================================================== */
-/* 🔥 GROUP SIP (FIXED) */
+/* 🔥 GROUP SIP (FIXED STRONG) */
 const groupSIPs = (data) => {
   const map = {};
 
@@ -68,29 +69,42 @@ const groupSIPs = (data) => {
       };
     }
 
-    const qty = item.quantity || item.installments || 1;
+    const qty = Number(
+      item.quantity || item.installments || 1
+    );
+
+    const invested = Number(
+      item.totalInvestment ||
+        item.totalAmount ||
+        item.amount ||
+        (item.price || 0) * qty ||
+        0
+    );
 
     map[key].quantity += qty;
-    map[key].totalInvestment += item.totalInvested || item.amount || 0;
+    map[key].totalInvestment += invested;
   });
 
   return Object.values(map).map((item) => {
-    const invested = item.totalInvestment;
-    const current = invested;
+    const avgPrice =
+      item.quantity > 0
+        ? item.totalInvestment / item.quantity
+        : 0;
+
+    const current = item.totalInvestment; // SIP no live price
 
     return {
       ...item,
-      avgPrice:
-        item.quantity > 0 ? invested / item.quantity : 0,
-      invested,
+      avgPrice,
+      invested: item.totalInvestment,
       current,
-      profit: current - invested,
+      profit: current - item.totalInvestment,
     };
   });
 };
 
 /* ====================================================== */
-/* 🔥 GROUP IPO */
+/* 🔥 GROUP IPO (FIXED STRONG) */
 const groupIPOs = (data) => {
   const map = {};
 
@@ -105,21 +119,27 @@ const groupIPOs = (data) => {
         assetName: item.companyName,
         quantity: 0,
         totalInvestment: 0,
-        currentPrice:
-          item.currentPrice || item.issuePrice || item.price || 0,
+        currentPrice: Number(
+          item.currentPrice || item.price || 0
+        ),
       };
     }
 
-    const qty = item.quantity || item.totalShares || 0;
+    const qty = Number(
+      item.quantity || item.totalShares || 0
+    );
+
+    const invested = Number(
+      item.totalAmount ||
+        item.price * qty ||
+        0
+    );
 
     map[key].quantity += qty;
-    map[key].totalInvestment += item.totalAmount || 0;
+    map[key].totalInvestment += invested;
 
     map[key].currentPrice =
-      item.currentPrice ||
-      item.issuePrice ||
-      item.price ||
-      map[key].currentPrice;
+      Number(item.currentPrice || item.price || map[key].currentPrice);
   });
 
   return Object.values(map).map((item) => {
@@ -128,8 +148,9 @@ const groupIPOs = (data) => {
         ? item.totalInvestment / item.quantity
         : 0;
 
-    const current =
-      item.quantity * (item.currentPrice || avgPrice);
+    const price = item.currentPrice > 0 ? item.currentPrice : avgPrice;
+
+    const current = item.quantity * price;
 
     return {
       ...item,
@@ -171,12 +192,12 @@ const getPortfolio = async (req, res) => {
     ];
 
     const totalInvestment = allAssets.reduce(
-      (acc, i) => acc + (i.invested || 0),
+      (acc, i) => acc + Number(i.invested || 0),
       0
     );
 
     const currentValue = allAssets.reduce(
-      (acc, i) => acc + (i.current || 0),
+      (acc, i) => acc + Number(i.current || 0),
       0
     );
 

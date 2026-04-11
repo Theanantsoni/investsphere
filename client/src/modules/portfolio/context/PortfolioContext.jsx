@@ -59,7 +59,7 @@ export const PortfolioProvider = ({ children }) => {
       const mergedTransactions = [...portfolioTx, ...walletTx]
         .map((t) => ({
           ...t,
-          assetType: t.assetType || "wallet",
+          assetType: (t.assetType || "wallet").toLowerCase(),
           assetName: t.assetName || "Wallet",
           totalAmount: t.totalAmount || t.amount || 0,
           createdAt: t.createdAt || t.date || new Date(),
@@ -72,7 +72,34 @@ export const PortfolioProvider = ({ children }) => {
 
       /* ================= NORMALIZER ================= */
       const normalize = (item) => {
-        const type = item.assetType || item.type || "unknown";
+        const type = (
+          item.assetType ||
+          item.type ||
+          "unknown"
+        ).toLowerCase();
+
+        const quantity = Number(
+          item.quantity ||
+            item.totalShares ||
+            item.installments ||
+            0
+        );
+
+        const avgPrice = Number(item.avgPrice || item.price || 0);
+
+        const invested = Number(
+          item.invested ||
+            item.totalInvestment ||
+            quantity * avgPrice ||
+            0
+        );
+
+        const current =
+          Number(item.current) > 0
+            ? Number(item.current)
+            : quantity * avgPrice;
+
+        const profit = current - invested;
 
         return {
           _id: item._id,
@@ -82,23 +109,17 @@ export const PortfolioProvider = ({ children }) => {
           assetType: type,
           type: type,
 
-          invested: Number(item.invested || item.totalInvestment || 0),
-          current: Number(item.current || 0),
-          profit: Number(item.profit || 0),
+          invested,
+          current,
+          profit,
 
           percentage:
-            item.invested > 0
-              ? Number(((item.profit / item.invested) * 100).toFixed(2))
+            invested > 0
+              ? Number(((profit / invested) * 100).toFixed(2))
               : 0,
 
-          quantity: Number(
-            item.quantity ||
-              item.totalShares ||
-              item.installments ||
-              0
-          ),
-
-          avgPrice: Number(item.avgPrice || item.price || 0),
+          quantity,
+          avgPrice,
 
           status: item.status || "active",
         };
@@ -128,7 +149,7 @@ export const PortfolioProvider = ({ children }) => {
           ? Number(((totalProfit / totalInvested) * 100).toFixed(2))
           : 0;
 
-      /* ================= ALLOCATION ================= */
+      /* ================= ALLOCATION (🔥 FIXED) ================= */
       const grouped = {
         stock: 0,
         sip: 0,
@@ -136,8 +157,11 @@ export const PortfolioProvider = ({ children }) => {
       };
 
       mergedAssets.forEach((i) => {
-        if (!grouped[i.assetType]) return;
-        grouped[i.assetType] += i.current || 0;
+        const key = i.assetType?.toLowerCase();
+
+        if (grouped[key] !== undefined) {
+          grouped[key] += Number(i.current || 0);
+        }
       });
 
       const allocationData = Object.keys(grouped).map((key) => ({

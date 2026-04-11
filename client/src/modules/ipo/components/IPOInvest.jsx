@@ -6,37 +6,26 @@ const IPOInvest = ({ ipo, user, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* ======================================================
-     🔥 PRICE PARSER (VERY IMPORTANT FIX)
-  ====================================================== */
-
+  /* ====================================================== */
   const parsedPrice = useMemo(() => {
     if (!ipo.price) return 0;
 
-    // Remove ₹ and spaces
     const clean = ipo.price.replace(/₹/g, "").trim();
 
-    // Handle range "125 - 135"
     if (clean.includes("-")) {
-      const parts = clean.split("-").map(p => Number(p.trim()));
-      return parts[1] || parts[0]; // use upper price
+      const parts = clean.split("-").map((p) => Number(p.trim()));
+      return parts[1] || parts[0];
     }
 
     return Number(clean);
   }, [ipo.price]);
 
-  /* ======================================================
-     CALCULATIONS
-  ====================================================== */
-
+  /* ====================================================== */
   const lotSize = ipo.lotSize || 10;
   const totalShares = lots * lotSize;
   const totalAmount = totalShares * parsedPrice;
 
-  /* ======================================================
-     SUBMIT
-  ====================================================== */
-
+  /* ====================================================== */
   const handleSubmit = async () => {
     try {
       setLoading(true);
@@ -56,26 +45,35 @@ const IPOInvest = ({ ipo, user, onClose }) => {
 
         lotSize,
         lots,
-        totalShares,
 
-        price: parsedPrice, // ✅ FIXED
-        totalAmount,
-
-        status: "applied",
+        price: parsedPrice,
       };
+
+      /* 🔥 LOG BEFORE SEND */
+      console.log("IPO Order 👉", payload);
 
       const res = await axios.post(
         "http://localhost:5000/api/ipo-investments/add",
         payload
       );
 
+      /* 🔥 FULL RESPONSE LOG */
+      console.log("IPO Saved 👉", res.data);
+
       if (res.data.success) {
+        console.log("✅ IPO Investment Added Successfully:", {
+          asset: ipo.name,
+          shares: totalShares,
+          amount: totalAmount,
+          price: parsedPrice,
+        });
+
         alert("IPO Applied Successfully 🚀");
         onClose();
       }
-
     } catch (err) {
       console.error("IPO Apply Error:", err);
+
       setError(
         err.response?.data?.message || "Failed to apply IPO"
       );
@@ -84,11 +82,11 @@ const IPOInvest = ({ ipo, user, onClose }) => {
     }
   };
 
+  /* ====================================================== */
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-fadeIn">
 
-        {/* HEADER */}
         <h2 className="text-xl font-bold mb-2">
           Apply IPO: {ipo.name}
         </h2>
@@ -97,13 +95,11 @@ const IPOInvest = ({ ipo, user, onClose }) => {
           {ipo.exchange} • {ipo.symbol}
         </p>
 
-        {/* INFO */}
         <div className="space-y-2 text-sm mb-4">
           <p><b>Price:</b> ₹{parsedPrice}</p>
           <p><b>Lot Size:</b> {lotSize}</p>
         </div>
 
-        {/* INPUT */}
         <div className="mb-4">
           <label className="text-sm font-medium">Lots</label>
           <input
@@ -115,20 +111,17 @@ const IPOInvest = ({ ipo, user, onClose }) => {
           />
         </div>
 
-        {/* SUMMARY */}
         <div className="bg-gray-100 p-3 rounded-lg mb-4 text-sm">
           <p><b>Total Shares:</b> {totalShares}</p>
           <p><b>Total Amount:</b> ₹{totalAmount}</p>
         </div>
 
-        {/* ERROR */}
         {error && (
           <p className="text-red-500 text-sm mb-3">
             {error}
           </p>
         )}
 
-        {/* ACTIONS */}
         <div className="flex gap-3">
           <button
             onClick={onClose}

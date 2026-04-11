@@ -2,7 +2,7 @@ const IPOinvestment = require("../models/IPOinvestmentModel");
 const { createTransaction } = require("../services/transactionService");
 
 /* ======================================================
-   ADD IPO INVESTMENT
+   ADD IPO INVESTMENT (FIXED WITH PROFIT LOGIC)
 ====================================================== */
 
 const addIPOinvestment = async (req, res) => {
@@ -14,22 +14,17 @@ const addIPOinvestment = async (req, res) => {
       companyName,
       lotSize,
       lots,
-      totalShares,
       price,
-      totalAmount,
     } = req.body;
 
-    /* ======================================================
-       BASIC VALIDATION
-    ====================================================== */
+    /* ================= VALIDATION ================= */
 
     if (
       !userEmail ||
       !ipoCode ||
       !lotSize ||
       !lots ||
-      price === undefined ||
-      totalAmount === undefined
+      price === undefined
     ) {
       return res.status(400).json({
         success: false,
@@ -37,36 +32,16 @@ const addIPOinvestment = async (req, res) => {
       });
     }
 
-    /* ======================================================
-       SAFE DATA CONVERSION
-    ====================================================== */
+    /* ================= SAFE CONVERSION ================= */
 
-    const safeData = {
-      userEmail: String(userEmail).toLowerCase().trim(),
-      username: username ? String(username).trim() : "User",
-
-      ipoCode: String(ipoCode).trim(),
-      companyName: companyName ? String(companyName).trim() : "Unknown IPO",
-
-      lotSize: Number(lotSize),
-      lots: Number(lots),
-      totalShares: Number(totalShares),
-      price: Number(price),
-      totalAmount: Number(totalAmount),
-
-      status: "applied",
-    };
-
-    /* ======================================================
-       STRICT VALIDATION (VERY IMPORTANT)
-    ====================================================== */
+    const safeLotSize = Number(lotSize);
+    const safeLots = Number(lots);
+    const safePrice = Number(price);
 
     if (
-      isNaN(safeData.lotSize) ||
-      isNaN(safeData.lots) ||
-      isNaN(safeData.totalShares) ||
-      isNaN(safeData.price) ||
-      isNaN(safeData.totalAmount)
+      isNaN(safeLotSize) ||
+      isNaN(safeLots) ||
+      isNaN(safePrice)
     ) {
       return res.status(400).json({
         success: false,
@@ -74,50 +49,54 @@ const addIPOinvestment = async (req, res) => {
       });
     }
 
-    if (safeData.lotSize <= 0) {
+    if (safeLotSize <= 0 || safeLots <= 0 || safePrice <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Invalid lot size",
+        message: "Invalid input values",
       });
     }
 
-    if (safeData.lots <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid lots",
-      });
-    }
+    /* ================= CALCULATIONS ================= */
 
-    if (safeData.totalShares <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid total shares",
-      });
-    }
+    const totalShares = safeLotSize * safeLots;
+    const totalAmount = totalShares * safePrice;
 
-    if (safeData.price <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid price",
-      });
-    }
+    /* 🔥 DEMO PROFIT LOGIC (IMPORTANT FIX) */
+    const randomGrowth = 1 + Math.random() * 0.2; // up to +20%
+    const currentPrice = Number(
+      (safePrice * randomGrowth).toFixed(2)
+    );
 
-    if (safeData.totalAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid total amount",
-      });
-    }
+    const safeData = {
+      userEmail: String(userEmail).toLowerCase().trim(),
+      username: username ? String(username).trim() : "User",
 
-    /* ======================================================
-       CREATE IPO INVESTMENT
-    ====================================================== */
+      ipoCode: String(ipoCode).trim(),
+      companyName: companyName
+        ? String(companyName).trim()
+        : "Unknown IPO",
+
+      lotSize: safeLotSize,
+      lots: safeLots,
+
+      quantity: totalShares,
+      totalShares,
+
+      price: safePrice,
+      currentPrice, // 🔥 FIXED
+
+      totalAmount,
+
+      assetCode: ipoCode,
+      assetName: companyName,
+      status: "applied",
+    };
+
+    /* ================= CREATE ================= */
 
     const investment = await IPOinvestment.create(safeData);
 
-    /* ======================================================
-       CREATE TRANSACTION (SAFE EXECUTION)
-    ====================================================== */
+    /* ================= TRANSACTION ================= */
 
     try {
       await createTransaction({
@@ -127,7 +106,7 @@ const addIPOinvestment = async (req, res) => {
         assetCode: safeData.ipoCode,
         assetName: safeData.companyName,
         type: "BUY",
-        orderType: "market", // ✅ FIXED
+        orderType: "market",
         quantity: safeData.totalShares,
         price: safeData.price,
         totalAmount: safeData.totalAmount,
@@ -135,12 +114,9 @@ const addIPOinvestment = async (req, res) => {
       });
     } catch (txError) {
       console.error("Transaction Error:", txError.message);
-      // ❗ Transaction fail hone pe IPO fail nahi hoga
     }
 
-    /* ======================================================
-       SUCCESS RESPONSE
-    ====================================================== */
+    /* ================= RESPONSE ================= */
 
     return res.status(201).json({
       success: true,
@@ -165,8 +141,6 @@ const getUserIPOinvestments = async (req, res) => {
   try {
     const { email } = req.query;
 
-    /* ================= VALIDATION ================= */
-
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -174,25 +148,19 @@ const getUserIPOinvestments = async (req, res) => {
       });
     }
 
-    /* ================= FETCH ================= */
-
     const investments = await IPOinvestment.find({
       userEmail: String(email).toLowerCase().trim(),
     }).sort({ createdAt: -1 });
 
-    /* ================= SUMMARY ================= */
-
     const totalInvested = investments.reduce(
       (acc, item) => acc + (item.totalAmount || 0),
-      0,
+      0
     );
 
     const totalShares = investments.reduce(
       (acc, item) => acc + (item.totalShares || 0),
-      0,
+      0
     );
-
-    /* ================= RESPONSE ================= */
 
     return res.json({
       success: true,

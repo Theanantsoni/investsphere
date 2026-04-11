@@ -5,7 +5,6 @@ SCHEMA
 ====================================================== */
 const ipoInvestmentSchema = new mongoose.Schema(
   {
-    /* ================= USER ================= */
     userEmail: {
       type: String,
       required: true,
@@ -18,7 +17,6 @@ const ipoInvestmentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    /* ================= CORE IPO ================= */
     ipoCode: {
       type: String,
       required: true,
@@ -30,17 +28,9 @@ const ipoInvestmentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    /* ================= STANDARDIZATION ================= */
-    assetCode: {
-      type: String,
-      trim: true,
-    },
-    assetName: {
-      type: String,
-      trim: true,
-    },
+    assetCode: String,
+    assetName: String,
 
-    /* ================= INVESTMENT ================= */
     lotSize: {
       type: Number,
       required: true,
@@ -52,7 +42,6 @@ const ipoInvestmentSchema = new mongoose.Schema(
       min: 1,
     },
 
-    /* 🔥 MAIN QUANTITY FIELD */
     quantity: {
       type: Number,
       required: true,
@@ -60,7 +49,6 @@ const ipoInvestmentSchema = new mongoose.Schema(
       default: 0,
     },
 
-    /* 🔥 LEGACY FIELD */
     totalShares: {
       type: Number,
       required: true,
@@ -74,7 +62,6 @@ const ipoInvestmentSchema = new mongoose.Schema(
       min: 0,
     },
 
-    /* 🔥 PORTFOLIO CALC */
     currentPrice: {
       type: Number,
       default: 0,
@@ -86,42 +73,40 @@ const ipoInvestmentSchema = new mongoose.Schema(
       min: 0,
     },
 
-    /* ================= STATUS ================= */
     status: {
       type: String,
       enum: ["applied", "allotted", "rejected"],
       default: "applied",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 /* ======================================================
-PRE SAVE (SAFE SYNC - FIXED)
+🔥 FINAL FIXED PRE SAVE (NO next)
 ====================================================== */
-ipoInvestmentSchema.pre("save", function () {
-  // 🔥 Standard fields mapping
+ipoInvestmentSchema.pre("save", async function () {
   this.assetCode = this.ipoCode;
   this.assetName = this.companyName;
 
-  // 🔥 FULL SYNC (SAFE)
   const qty = Number(this.quantity || this.totalShares || 0);
 
   this.quantity = qty;
   this.totalShares = qty;
+
+  if (!this.totalAmount || this.totalAmount <= 0) {
+    this.totalAmount = qty * Number(this.price || 0);
+  }
+
+  if (!this.currentPrice || this.currentPrice <= 0) {
+    this.currentPrice = Number(this.price || 0);
+  }
 });
 
-/* ======================================================
-INDEXES
-====================================================== */
+/* ====================================================== */
 ipoInvestmentSchema.index({ userEmail: 1, createdAt: -1 });
 ipoInvestmentSchema.index({ ipoCode: 1 });
 
-/* ======================================================
-MODEL
-====================================================== */
 module.exports =
   mongoose.models.IPOinvestment ||
   mongoose.model("IPOinvestment", ipoInvestmentSchema);
