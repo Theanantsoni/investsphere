@@ -36,6 +36,8 @@ const walletRoutes = require("./routes/walletRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const pnlRoutes = require("./routes/pnlRoutes");
+const portfolioOrderRoutes = require("./routes/portfolioOrderRoutes");
+
 
 
 /* ================= CONTROLLERS ================= */
@@ -104,6 +106,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/pnl", pnlRoutes);
+app.use("/api/orders", portfolioOrderRoutes);
 
 
 /* ======================================================
