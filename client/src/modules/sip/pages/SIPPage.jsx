@@ -14,23 +14,27 @@ import SIPStatsBar from "../components/SIPStatsBar";
 
 import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
 
-import { getFundMinSip, getFundCategory, getFundRisk } from "../utils/sipUtils";
+import {
+  getFundMinSip,
+  getFundCategory,
+  getFundRisk,
+} from "../utils/sipUtils";
 
 const SIPPage = () => {
-  const { sipData, loading } = useSIP();
+  const { sipData = [], loading, error } = useSIP(); // ✅ SAFE DEFAULT
 
-  const safeSipData = Array.isArray(sipData) ? sipData : [];
+  /* ================= SAFE DATA ================= */
+  const safeSipData = useMemo(
+    () => (Array.isArray(sipData) ? sipData : []),
+    [sipData]
+  );
 
+  /* ================= STATE ================= */
   const [search, setSearch] = useState("");
-
   const [category, setCategory] = useState(["All"]);
   const [risk, setRisk] = useState(["All"]);
-
   const [currentPage, setCurrentPage] = useState(1);
-
   const [minSip, setMinSip] = useState("500");
-
-  const [initialLoad, setInitialLoad] = useState(true);
 
   const [user, setUser] = useState(null);
   const [watchlist, setWatchlist] = useState([]);
@@ -38,28 +42,33 @@ const SIPPage = () => {
   const itemsPerPage = 9;
 
   /* ================= LOAD USER ================= */
-
   useEffect(() => {
-    const storedUser = localStorage.getItem("investsphere_user");
+    try {
+      const storedUser = localStorage.getItem("investsphere_user");
+      if (!storedUser) return;
 
-    if (!storedUser) return;
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
 
-    const parsedUser = JSON.parse(storedUser);
-    setUser(parsedUser);
-
-    fetchWatchlist(parsedUser.email);
+      if (parsedUser?.email) {
+        fetchWatchlist(parsedUser.email);
+      }
+    } catch (err) {
+      console.log("User parse error");
+    }
   }, []);
 
   /* ================= FETCH WATCHLIST ================= */
-
   const fetchWatchlist = async (email) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/watchlist/${email}`,
+        `http://localhost:5000/api/watchlist/${email}`
       );
 
-      if (res.data.success) {
-        const codes = res.data.data.map((item) => String(item.itemCode));
+      if (res.data?.success) {
+        const codes = res.data.data.map((item) =>
+          String(item.itemCode)
+        );
 
         setWatchlist(codes);
       }
@@ -68,32 +77,26 @@ const SIPPage = () => {
     }
   };
 
-  /* FIRST LOAD DETECT */
-
-  useEffect(() => {
-    if (!loading && sipData.length > 0) {
-      setInitialLoad(false);
-    }
-  }, [loading, sipData]);
-
-  /* RESET PAGE */
-
+  /* ================= RESET PAGE ================= */
   useEffect(() => {
     setCurrentPage(1);
   }, [search, category, risk, minSip]);
 
-  /* FILTER LOGIC */
-
+  /* ================= FILTER LOGIC ================= */
   const filteredFunds = useMemo(() => {
-    const funds = Array.isArray(sipData) ? sipData : [];
+    if (!safeSipData.length) return [];
 
-    return funds
+    return safeSipData
       .filter((fund) =>
-        fund.schemeName?.toLowerCase().includes(search.toLowerCase()),
+        (fund.schemeName || "")
+          .toLowerCase()
+          .includes(search.toLowerCase())
       )
 
       .filter((fund) => {
-        const fundCategory = getFundCategory(fund.schemeName || "");
+        const fundCategory = getFundCategory(
+          fund.schemeName || ""
+        );
 
         if (category.includes("All")) return true;
 
@@ -101,7 +104,9 @@ const SIPPage = () => {
       })
 
       .filter((fund) => {
-        const fundRisk = getFundRisk(fund.schemeName || "");
+        const fundRisk = getFundRisk(
+          fund.schemeName || ""
+        );
 
         if (risk.includes("All")) return true;
 
@@ -109,27 +114,50 @@ const SIPPage = () => {
       })
 
       .filter((fund) => {
-        const fundMinSip = getFundMinSip(fund.schemeCode || 0);
+        const fundMinSip = getFundMinSip(
+          fund.schemeCode || 0
+        );
 
         return Number(minSip || 0) >= fundMinSip;
       });
-  }, [sipData, search, category, risk, minSip]);
+  }, [safeSipData, search, category, risk, minSip]);
 
-  const totalPages = Math.ceil(filteredFunds.length / itemsPerPage);
-
-  const paginatedFunds = filteredFunds.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+  /* ================= PAGINATION ================= */
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredFunds.length / itemsPerPage)
   );
 
-  if (initialLoad && loading && sipData.length === 0) {
+  const paginatedFunds = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredFunds.slice(start, start + itemsPerPage);
+  }, [filteredFunds, currentPage]);
+
+  /* ================= LOADING STATE ================= */
+  if (loading) {
     return <InvestSphereLoader />;
   }
 
+  /* ================= ERROR STATE ================= */
+  if (!loading && error && safeSipData.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h2 className="text-xl font-semibold text-red-500 mb-3">
+            Failed to load SIP data
+          </h2>
+          <p className="text-slate-500 mb-4">
+            Please check backend or try again
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ================= UI ================= */
   return (
     <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* HEADER */}
-
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <h1 className="text-3xl font-bold text-slate-800">
           SIP Investment Funds
@@ -152,19 +180,17 @@ const SIPPage = () => {
       />
 
       {/* FILTER AREA */}
-
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6 bg-white p-6 rounded-2xl shadow-md border border-slate-200 my-6">
-        {/* SEARCH */}
-
         <div className="w-full md:max-w-md">
           <label className="block text-sm font-semibold text-slate-600 mb-2">
             Search SIP Fund
           </label>
 
-          <SIPSearchBar search={search} setSearch={setSearch} />
+          <SIPSearchBar
+            search={search}
+            setSearch={setSearch}
+          />
         </div>
-
-        {/* FILTERS */}
 
         <SIPFilters
           category={category}
@@ -175,10 +201,7 @@ const SIPPage = () => {
       </div>
 
       {/* CONTENT */}
-
-      {loading ? (
-        <SIPLoadingSkeleton />
-      ) : paginatedFunds.length === 0 ? (
+      {paginatedFunds.length === 0 ? (
         <div className="flex justify-center py-16">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-md p-10 text-center">
             <h3 className="text-xl font-semibold text-slate-800 mb-3">
