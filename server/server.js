@@ -34,6 +34,7 @@ const ipoInvestmentRoutes = require("./routes/ipoInvestmentRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 /* ================= CONTROLLERS ================= */
 const { getTicker, getMarketHistory } = require("./controllers/marketController");
@@ -99,6 +100,8 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/portfolio", portfolioRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/analytics", analyticsRoutes);
+
 
 /* ======================================================
 🔥 SIP PROXY (FINAL FIX)
