@@ -1,0 +1,63 @@
+admin
+ ├── public
+ │   └── favicon.ico
+ │
+ ├── src
+ │   ├── assets
+ │   │   ├── images
+ │   │   └── icons
+ │
+ │   ├── components
+ │   │   ├── Sidebar.jsx
+ │   │   ├── Header.jsx
+ │   │   ├── Layout.jsx
+ │   │   ├── Table.jsx
+ │   │   ├── Modal.jsx
+ │   │   ├── Loader.jsx
+ │   │   ├── StatsCard.jsx
+ │   │   └── Chart.jsx
+ │
+ │   ├── pages
+ │   │   ├── Dashboard.jsx
+ │   │   ├── Users.jsx
+ │   │   ├── Stocks.jsx
+ │   │   ├── SIP.jsx
+ │   │   ├── IPO.jsx
+ │   │   ├── Transactions.jsx
+ │   │   ├── Wallets.jsx
+ │   │   ├── Watchlist.jsx
+ │   │   ├── Reports.jsx
+ │   │   └── Login.jsx
+ │
+ │   ├── services
+ │   │   ├── api.js
+ │   │   ├── auth.js
+ │   │   ├── users.js
+ │   │   ├── stocks.js
+ │   │   ├── sip.js
+ │   │   ├── ipo.js
+ │   │   ├── transactions.js
+ │   │   ├── wallets.js
+ │   │   ├── watchlist.js
+ │   │   └── reports.js
+ │
+ │   ├── hooks
+ │   │   └── useAuth.js
+ │
+ │   ├── utils
+ │   │   ├── format.js
+ │   │   └── constants.js
+ │
+ │   ├── App.jsx
+ │   ├── main.jsx
+ │   └── index.css
+ │
+ ├── .env
+ ├── package.json
+ ├── vite.config.js
+ └── tailwind.config.js
+
+
+ ------------------------------------
+
+
