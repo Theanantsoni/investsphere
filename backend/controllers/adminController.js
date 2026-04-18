@@ -8,6 +8,7 @@ const Transaction = require("../models/Transaction");
 const Wallet = require("../models/Wallet");
 const Watchlist = require("../models/Watchlist");
 const Report = require("../models/Report");
+const Notification = require("../models/Notification"); // ✅ NEW
 
 const {
   successResponse,
@@ -220,6 +221,58 @@ exports.getDashboardStats = async (req, res) => {
         wallets,
       },
       "Dashboard stats fetched successfully"
+    );
+  } catch (err) {
+    return errorResponse(res, err.message);
+  }
+};
+
+/* =========================================
+   🔔 NOTIFICATIONS (FINAL FIXED)
+========================================= */
+exports.getAllNotifications = async (req, res) => {
+  try {
+    const { page, limit, skip } = getPagination(req);
+
+    const [notifications, total] = await Promise.all([
+      Notification.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Notification.countDocuments(),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      notifications,
+      total,
+      page,
+      limit,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+/* =========================================
+   🔔 MARK AS READ (OPTIONAL SUPPORT)
+========================================= */
+exports.markNotificationAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Notification.findByIdAndUpdate(id, {
+      read: true,
+    });
+
+    return successResponse(
+      res,
+      {},
+      "Notification marked as read"
     );
   } catch (err) {
     return errorResponse(res, err.message);

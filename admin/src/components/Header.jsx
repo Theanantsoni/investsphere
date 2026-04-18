@@ -1,6 +1,7 @@
 // src/components/Header.jsx
 
 import { Menu, Bell } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Header = ({ user, onMenuClick }) => {
   return (
@@ -9,7 +10,7 @@ const Header = ({ user, onMenuClick }) => {
         {/* LEFT */}
         <div className="flex items-center gap-3">
           <button
-            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 transition"
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 transition active:scale-95"
             onClick={onMenuClick}
           >
             <Menu size={20} className="text-gray-300" />
@@ -28,13 +29,16 @@ const Header = ({ user, onMenuClick }) => {
         {/* RIGHT */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Notification */}
-          <button className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 transition shadow-sm">
+          <Link
+            to="/notifications"
+            className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gray-800 hover:bg-gray-700 transition shadow-sm active:scale-95"
+          >
             <Bell size={18} className="text-gray-300" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-          </button>
+          </Link>
 
           {/* USER */}
-          <div className="flex items-center gap-3 bg-gray-800 px-3 py-2 rounded-xl shadow-sm transition">
+          <div className="flex items-center gap-3 bg-gray-800 px-3 py-2 rounded-xl shadow-sm transition hover:bg-gray-700">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow">
               {user?.email?.[0]?.toUpperCase() || "U"}
             </div>

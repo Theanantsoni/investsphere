@@ -5,9 +5,11 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
 const adminRoutes = require("./routes/adminRoutes");
+const startWatcher = require("./utils/watcher");
 
 const {
   notFound,
@@ -15,11 +17,6 @@ const {
 } = require("./middleware/errorMiddleware");
 
 const app = express();
-
-/* =========================================
-   DATABASE CONNECTION
-========================================= */
-connectDB();
 
 /* =========================================
    MIDDLEWARE
@@ -66,10 +63,34 @@ app.use(notFound);
 app.use(errorHandler);
 
 /* =========================================
-   SERVER START
+   SERVER + DB + WATCHER START (FINAL FIXED FLOW)
 ========================================= */
 const PORT = process.env.PORT || 5100;
 
-app.listen(PORT, () => {
-  console.log(`🔥 Server running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    // ✅ Connect DB FIRST
+    await connectDB();
+
+    // ✅ Ensure DB connection is ready
+    if (mongoose.connection.readyState === 1) {
+      console.log("✅ Mongo Ready — Starting Watcher...");
+      await startWatcher();
+    } else {
+      mongoose.connection.once("open", async () => {
+        console.log("✅ Mongo Ready (delayed) — Starting Watcher...");
+        await startWatcher();
+      });
+    }
+
+    // ✅ Start server
+    app.listen(PORT, () => {
+      console.log(`🔥 Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Server start failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();

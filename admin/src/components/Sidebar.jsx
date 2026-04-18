@@ -9,6 +9,7 @@ import {
   Wallet,
   Activity,
   Eye,
+  Bell, // ✅ NEW
   X,
   LogOut,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const menu = [
   { name: "Wallets", path: "/wallets", icon: Wallet },
   { name: "Watchlist", path: "/watchlist", icon: Eye },
   { name: "Reports", path: "/reports", icon: FileText },
+  { name: "Notifications", path: "/notifications", icon: Bell }, // ✅ NEW
 ];
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -52,8 +54,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
-          
-          {/* Logo + Text */}
           <div className="flex items-center gap-3">
             <img
               src="/images/4.png"

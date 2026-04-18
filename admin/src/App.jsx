@@ -21,6 +21,7 @@ import Transactions from "./pages/Transactions";
 import Wallets from "./pages/Wallets";
 import Watchlist from "./pages/Watchlist";
 import Reports from "./pages/Reports";
+import Notifications from "./pages/Notifications"; // ✅ NEW
 
 const App = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -80,6 +81,7 @@ const App = () => {
             <Route path="wallets" element={<Wallets />} />
             <Route path="watchlist" element={<Watchlist />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="notifications" element={<Notifications />} /> {/* ✅ NEW */}
           </Route>
 
           {/* FALLBACK */}

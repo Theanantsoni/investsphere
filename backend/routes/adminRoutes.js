@@ -16,11 +16,12 @@ const {
   getAllWatchlist,
   getAllReports,
   getDashboardStats,
+  getAllNotifications,
+  markNotificationAsRead,
 } = require("../controllers/adminController");
 
 /* =========================================
    (OPTIONAL) MIDDLEWARE PLACEHOLDER
-   👉 Add auth / admin check here later
 ========================================= */
 // const { protect, isAdmin } = require("../middleware/authMiddleware");
 // router.use(protect, isAdmin);
@@ -73,7 +74,13 @@ router.route("/watchlist").get(getAllWatchlist);
 router.route("/reports").get(getAllReports);
 
 /* =========================================
-   FUTURE READY (EXAMPLES 🔥)
+   🔔 NOTIFICATIONS
+========================================= */
+router.get("/notifications", getAllNotifications);
+router.patch("/notifications/:id/read", markNotificationAsRead);
+
+/* =========================================
+   FUTURE READY
 ========================================= */
 // router.route("/users/:id").delete(deleteUser);
 // router.route("/reports/:id").patch(updateReportStatus);
