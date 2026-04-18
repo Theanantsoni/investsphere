@@ -13,22 +13,9 @@ const Login = () => {
 
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
-  /* =========================
-     DISABLE SCROLL
-  ========================= */
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "auto";
-      document.documentElement.style.overflow = "auto";
-    };
-  }, []);
-
-  /* =========================
-     ADMIN CHECK
-  ========================= */
+  /* ======================================================
+     ADMIN CHECK (AFTER OTP SUCCESS)
+  ====================================================== */
   useEffect(() => {
     if (!isLoaded || hasChecked.current) return;
 
@@ -37,17 +24,14 @@ const Login = () => {
 
       const email = user.primaryEmailAddress?.emailAddress;
 
+      // ❌ NOT ADMIN
       if (email !== ADMIN_EMAIL) {
         setShowBlockedModal(true);
-
-        // 🔥 FIX: delay signOut (prevent instant UI reset)
-        setTimeout(() => {
-          signOut();
-        }, 2000);
-
+        signOut();
         return;
       }
 
+      // ✅ ADMIN SUCCESS
       setShowSuccessModal(true);
 
       setTimeout(() => {
@@ -56,13 +40,16 @@ const Login = () => {
     }
   }, [user, isLoaded]);
 
+  /* ======================================================
+     HANDLE BLOCK CLOSE
+  ====================================================== */
   const handleCloseBlocked = () => {
     setShowBlockedModal(false);
     hasChecked.current = false;
   };
 
   return (
-    <div className="h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black px-4">
 
       {/* SUCCESS MODAL */}
       {showSuccessModal && (
@@ -100,7 +87,7 @@ const Login = () => {
 
       {/* LOGIN CARD */}
       {!showBlockedModal && (
-        <div className="w-full max-w-lg h-[620px] overflow-hidden bg-gray-900/90 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 shadow-xl flex flex-col justify-between">
+        <div className="w-full max-w-lg bg-gray-900/90 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 shadow-xl">
 
           {/* LOGO */}
           <div className="flex justify-center mb-6">
@@ -108,7 +95,7 @@ const Login = () => {
           </div>
 
           {/* HEADER */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-6">
             <h1 className="text-2xl font-semibold text-white">
               InvestSphere Admin
             </h1>
@@ -117,37 +104,26 @@ const Login = () => {
             </p>
           </div>
 
-          {/* SIGNIN */}
-          <div className="flex-1 overflow-hidden flex items-center justify-center">
-            <div className="w-full max-w-md">
+          {/* CLERK SIGNIN WITH OTP */}
+          <SignIn
+            routing="hash"
+            signUpUrl={undefined}
+            appearance={{
+              elements: {
+                rootBox: "w-full flex justify-center",
+                card: "w-full max-w-md bg-transparent shadow-none border-0",
+                headerTitle: "hidden",
+                headerSubtitle: "hidden",
+                footer: "hidden",
+                formFieldInput:
+                  "bg-gray-900 border border-gray-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500",
+                formButtonPrimary:
+                  "bg-indigo-600 hover:bg-indigo-700 text-white",
+              },
+            }}
+          />
 
-              <SignIn
-                routing="hash"
-                signUpUrl={undefined}
-                appearance={{
-                  elements: {
-                    rootBox: "w-full flex justify-center",
-                    card: "w-full bg-transparent shadow-none border-0",
-                    headerTitle: "hidden",
-                    headerSubtitle: "hidden",
-                    footer: "hidden",
-
-                    // ❌ REMOVE overflow-hidden (OTP fix)
-                    form: "",
-                    formFieldRow: "",
-
-                    formFieldInput:
-                      "bg-gray-900 border border-gray-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500",
-                    formButtonPrimary:
-                      "bg-indigo-600 hover:bg-indigo-700 text-white",
-                  },
-                }}
-              />
-
-            </div>
-          </div>
-
-          <p className="text-xs text-gray-500 text-center mt-4">
+          <p className="text-xs text-gray-500 text-center mt-6">
             Only authorized admin can access this panel
           </p>
         </div>

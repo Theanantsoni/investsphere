@@ -1,5 +1,3 @@
-// src/components/Sidebar.jsx
-
 import { NavLink } from "react-router-dom";
 import { useClerk } from "@clerk/clerk-react";
 import {
@@ -54,9 +52,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent tracking-wide">
-            InvestSphere
-          </h1>
+          
+          {/* Logo + Text */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/4.png"
+              alt="logo"
+              className="h-auto w-auto max-h-10 object-contain"
+            />
+
+            <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent tracking-wide">
+              InvestSphere
+            </h1>
+          </div>
 
           <button
             className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg bg-gray-800 hover:bg-gray-700 transition"
