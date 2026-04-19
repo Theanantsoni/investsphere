@@ -1,19 +1,39 @@
+// server/controllers/securityController.js (FINAL FULL CORRECT - CHANGE PASSWORD WORKING)
+
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken"); // 🔥 added for fallback
 const Register = require("../models/Register");
 
 /* ======================================================
- CHANGE PASSWORD
+   CHANGE PASSWORD
 ====================================================== */
 exports.changePassword = async (req, res) => {
   try {
     /* ================= USER ================= */
-    const userId = req.user?.id;
+    let userId = req.user?._id || req.user?.id;
 
+    /* 🔥 FALLBACK: decode token manually if middleware fails */
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized user",
-      });
+      const authHeader = req.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized user",
+        });
+      }
+
+      const token = authHeader.split(" ")[1];
+
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (err) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid token",
+        });
+      }
     }
 
     /* ================= INPUT ================= */

@@ -1,4 +1,4 @@
-// server.js (FINAL PRODUCTION VERSION)
+// server.js (FINAL PRODUCTION VERSION - FIXED CORS)
 
 const express = require("express");
 const cors = require("cors");
@@ -38,10 +38,11 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const pnlRoutes = require("./routes/pnlRoutes");
 const portfolioOrderRoutes = require("./routes/portfolioOrderRoutes");
 
-
-
 /* ================= CONTROLLERS ================= */
-const { getTicker, getMarketHistory } = require("./controllers/marketController");
+const {
+  getTicker,
+  getMarketHistory,
+} = require("./controllers/marketController");
 const { getStockDetail } = require("./controllers/stockController");
 const { getMarketNews } = require("./controllers/newsController");
 
@@ -63,13 +64,31 @@ app.use(
   })
 );
 
+/* ================= CORS FIX ================= */
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Handle preflight requests
+app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -108,7 +127,6 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/pnl", pnlRoutes);
 app.use("/api/orders", portfolioOrderRoutes);
 
-
 /* ======================================================
 🔥 SIP PROXY (FINAL FIX)
 ====================================================== */
@@ -126,9 +144,11 @@ const fetchMF = async (url) => {
       },
     });
 
-    console.log("✅ Success:", Array.isArray(res.data) ? res.data.length : "object");
+    console.log(
+      "✅ Success:",
+      Array.isArray(res.data) ? res.data.length : "object"
+    );
     return res.data;
-
   } catch (err) {
     console.log("⚠️ First attempt failed:", err.message);
 
@@ -143,7 +163,6 @@ const fetchMF = async (url) => {
       });
 
       return retry.data;
-
     } catch (retryErr) {
       console.log("❌ Retry failed:", retryErr.message);
       return null;
@@ -170,7 +189,6 @@ app.get("/api/proxy/sip", async (req, res) => {
     }
 
     res.json(data);
-
   } catch (error) {
     console.log("🔥 SIP FINAL ERROR:", error.message);
     res.json([]);
@@ -196,7 +214,6 @@ app.get("/api/proxy/sip/:id", async (req, res) => {
       meta: data.meta,
       data: data.data,
     });
-
   } catch (error) {
     console.log("🔥 SIP DETAIL ERROR:", error.message);
 

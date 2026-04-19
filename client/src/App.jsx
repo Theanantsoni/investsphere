@@ -31,7 +31,7 @@ import StockDetailPage from "./modules/stock/pages/StockDetailPage";
 import PortfolioPage from "./modules/portfolio/pages/PortfolioPage";
 import PortfolioDetailPage from "./modules/portfolio/pages/PortfolioDetailPage";
 
-/* 🔥 IMPORT PROVIDER (IMPORTANT FIX) */
+/* 🔥 IMPORT PROVIDER */
 import { PortfolioProvider } from "./modules/portfolio/context/PortfolioContext";
 
 /* ================= MARKET NEWS ================= */
@@ -58,7 +58,7 @@ function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 3000,
+          duration: 2000,
         }}
       />
 
@@ -129,7 +129,7 @@ function App() {
             }
           />
 
-          {/* ================= PORTFOLIO (🔥 FIXED) ================= */}
+          {/* ================= PORTFOLIO ================= */}
           <Route
             path="portfolio"
             element={

@@ -64,7 +64,7 @@ function LoginPage() {
     e.preventDefault();
 
     if (!form.email || !form.password) {
-      toast.error("Email and password required");
+      toast.error("Email and password required", { duration: 2000 });
       return;
     }
 
@@ -89,14 +89,12 @@ function LoginPage() {
           JSON.stringify({
             token: res.data.token,
             ...res.data.user,
-          }),
+          })
         );
 
         console.log("STORED USER:", userData);
 
-        toast.success("Login successful", {
-          duration: 3000,
-        });
+        toast.success("Login successful", { duration: 2000 });
 
         setTimeout(() => {
           navigate("/");
@@ -104,7 +102,9 @@ function LoginPage() {
       }
     } catch (err) {
       console.log("LOGIN ERROR:", err.response?.data);
-      toast.error(err.response?.data?.message || "Server error");
+      toast.error(err.response?.data?.message || "Server error", {
+        duration: 2000,
+      });
     }
 
     setLoading(false);
@@ -116,22 +116,24 @@ function LoginPage() {
 
   const sendOTP = async () => {
     if (!email) {
-      toast.error("Enter email first");
+      toast.error("Enter email first", { duration: 2000 });
       return;
     }
 
     try {
       const res = await axios.post(
         "http://localhost:5000/api/forgot-password/send-otp",
-        { email },
+        { email }
       );
 
       if (res.data.success) {
-        toast.success("OTP sent");
+        toast.success("OTP sent", { duration: 2000 });
         setStep("otp");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Server error");
+      toast.error(err.response?.data?.message || "Server error", {
+        duration: 2000,
+      });
     }
   };
 
@@ -141,7 +143,7 @@ function LoginPage() {
 
   const verifyOTP = async () => {
     if (!otp) {
-      toast.error("Enter OTP");
+      toast.error("Enter OTP", { duration: 2000 });
       return;
     }
 
@@ -151,16 +153,18 @@ function LoginPage() {
         {
           email: email.trim().toLowerCase(),
           otp: otp.trim(),
-        },
+        }
       );
 
       if (res.data.success) {
-        toast.success("OTP verified");
+        toast.success("OTP verified", { duration: 2000 });
         setStep("reset");
       }
     } catch (err) {
       console.log("VERIFY OTP ERROR:", err.response?.data);
-      toast.error(err.response?.data?.message || "Invalid OTP");
+      toast.error(err.response?.data?.message || "Invalid OTP", {
+        duration: 2000,
+      });
     }
   };
 
@@ -170,12 +174,12 @@ function LoginPage() {
 
   const resetPassword = async () => {
     if (!password || !confirmPassword) {
-      toast.error("Fill all password fields");
+      toast.error("Fill all password fields", { duration: 2000 });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Passwords do not match", { duration: 2000 });
       return;
     }
 
@@ -185,7 +189,7 @@ function LoginPage() {
         {
           email: email.trim().toLowerCase(),
           password: password.trim(),
-        },
+        }
       );
 
       if (res.data.success) {
@@ -205,10 +209,12 @@ function LoginPage() {
             JSON.stringify({
               token: loginRes.data.token,
               ...loginRes.data.user,
-            }),
+            })
           );
 
-          toast.success("Password updated & logged in");
+          toast.success("Password updated & logged in", {
+            duration: 2000,
+          });
 
           setTimeout(() => {
             navigate("/");
@@ -217,7 +223,9 @@ function LoginPage() {
       }
     } catch (err) {
       console.log("RESET ERROR:", err.response?.data);
-      toast.error(err.response?.data?.message || "Server error");
+      toast.error(err.response?.data?.message || "Server error", {
+        duration: 2000,
+      });
     }
   };
 
@@ -239,14 +247,14 @@ function LoginPage() {
 
   const findEmails = async () => {
     if (phone.length !== 10) {
-      toast.error("Enter valid mobile number");
+      toast.error("Enter valid mobile number", { duration: 2000 });
       return;
     }
 
     try {
       const res = await axios.post(
         "http://localhost:5000/api/find-email-by-mobile",
-        { phone },
+        { phone }
       );
 
       const maskedList = res.data.emails.map((item) => ({
@@ -256,13 +264,20 @@ function LoginPage() {
 
       setEmails(maskedList);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Server error");
+      toast.error(err.response?.data?.message || "Server error", {
+        duration: 2000,
+      });
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6 relative">
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 2000,
+        }}
+      />
 
       <div className="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 border">
         <h2 className="text-3xl font-bold text-center mb-2">

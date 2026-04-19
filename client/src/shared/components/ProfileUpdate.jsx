@@ -43,7 +43,7 @@ const ProfileUpdate = () => {
     if (user?.email) {
       setVerifyEmail(user.email);
     } else {
-      toast.error("Please login first", { duration: 3000 });
+      toast.error("Please login first", { duration: 2000 });
       navigate("/login");
     }
   }, []);
@@ -53,10 +53,10 @@ const ProfileUpdate = () => {
   ====================================================== */
 
   const handlePhoneChange = (e) => {
-    let input = e.target.value.replace(/\D/g, ""); // remove non-digits
+    let input = e.target.value.replace(/\D/g, "");
 
     if (input.length > 10) {
-      input = input.slice(0, 10); // max 10 digits
+      input = input.slice(0, 10);
     }
 
     setValue(input);
@@ -68,14 +68,14 @@ const ProfileUpdate = () => {
 
   const sendOTP = async () => {
     if (!field) {
-      toast.error("Select field first", { duration: 3000 });
+      toast.error("Select field first", { duration: 2000 });
       return;
     }
 
     if (field === "phone") {
       if (!isValidPhone) {
         toast.error("Mobile must be exactly 10 digits", {
-          duration: 3000,
+          duration: 2000,
         });
         return;
       }
@@ -83,19 +83,19 @@ const ProfileUpdate = () => {
 
     if (field === "password") {
       if (!value || !confirmPassword) {
-        toast.error("Fill all password fields", { duration: 3000 });
+        toast.error("Fill all password fields", { duration: 2000 });
         return;
       }
 
       if (!isPasswordValid) {
         toast.error("Password must be at least 6 characters", {
-          duration: 3000,
+          duration: 2000,
         });
         return;
       }
 
       if (!isPasswordMatch) {
-        toast.error("Passwords do not match", { duration: 3000 });
+        toast.error("Passwords do not match", { duration: 2000 });
         return;
       }
     }
@@ -113,13 +113,13 @@ const ProfileUpdate = () => {
         field === "phone"
           ? "OTP sent for mobile update"
           : "OTP sent for password update",
-        { duration: 3000 },
+        { duration: 2000 }
       );
 
       setStep(2);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send OTP", {
-        duration: 3000,
+        duration: 2000,
       });
     } finally {
       setLoading(false);
@@ -132,7 +132,7 @@ const ProfileUpdate = () => {
 
   const verifyOTP = async () => {
     if (!otp) {
-      toast.error("Enter OTP", { duration: 3000 });
+      toast.error("Enter OTP", { duration: 2000 });
       return;
     }
 
@@ -145,12 +145,15 @@ const ProfileUpdate = () => {
       });
 
       if (field === "phone") {
-        toast.success("Mobile number updated successfully");
+        toast.success("Mobile number updated successfully", {
+          duration: 2000,
+        });
       } else if (field === "password") {
-        toast.success("Password updated successfully");
+        toast.success("Password updated successfully", {
+          duration: 2000,
+        });
       }
 
-      /* RESET */
       setStep(1);
       setField("");
       setValue("");
@@ -164,11 +167,11 @@ const ProfileUpdate = () => {
       const message = err.response?.data?.message;
 
       if (message === "Invalid OTP") {
-        toast.error("Invalid OTP");
+        toast.error("Invalid OTP", { duration: 2000 });
       } else if (message === "OTP expired") {
-        toast.error("OTP expired");
+        toast.error("OTP expired", { duration: 2000 });
       } else {
-        toast.error(message || "Update failed");
+        toast.error(message || "Update failed", { duration: 2000 });
       }
     } finally {
       setLoading(false);
@@ -192,10 +195,14 @@ const ProfileUpdate = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 2000,
+        }}
+      />
 
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl p-8 border border-gray-100 transition-all">
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={() => navigate(-1)}
@@ -212,7 +219,6 @@ const ProfileUpdate = () => {
           <div />
         </div>
 
-        {/* EMAIL */}
         <div className="mb-5">
           <label className="text-sm text-gray-500 mb-1 block">
             Logged-in Email
@@ -225,7 +231,6 @@ const ProfileUpdate = () => {
           />
         </div>
 
-        {/* FIELD */}
         <div className="mb-5">
           <label className="text-sm text-gray-500 mb-1 block">
             Select Field
@@ -245,7 +250,6 @@ const ProfileUpdate = () => {
           </select>
         </div>
 
-        {/* PHONE */}
         {field === "phone" && (
           <>
             <input
@@ -269,7 +273,6 @@ const ProfileUpdate = () => {
           </>
         )}
 
-        {/* PASSWORD */}
         {field === "password" && (
           <>
             <input
@@ -298,7 +301,6 @@ const ProfileUpdate = () => {
           </>
         )}
 
-        {/* STEP BUTTONS */}
         {step === 1 && (
           <button
             onClick={sendOTP}
