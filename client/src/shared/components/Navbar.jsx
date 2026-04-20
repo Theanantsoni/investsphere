@@ -24,10 +24,13 @@ import {
   Bell,
 } from "lucide-react";
 
+import { getUserNotifications } from "../../services/notificationService";
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,6 +52,27 @@ const Navbar = () => {
       setUser(null);
     }
   }, [location.pathname]);
+
+  /* ================= FETCH NOTIFICATIONS COUNT ================= */
+  const fetchNotificationCount = async () => {
+    try {
+      if (!user?.email) return;
+
+      const res = await getUserNotifications(user.email);
+
+      if (res?.success) {
+        setNotificationCount(res.data.length || 0);
+      }
+    } catch (err) {
+      console.error("Notification count error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.email) {
+      fetchNotificationCount();
+    }
+  }, [user]);
 
   /* ================= CLOSE DROPDOWN ================= */
   useEffect(() => {
@@ -113,7 +137,7 @@ const Navbar = () => {
     `https://ui-avatars.com/api/?name=${user?.name || "User"}`;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
 
         {/* LOGO */}
@@ -149,19 +173,30 @@ const Navbar = () => {
         </div>
 
         {/* RIGHT SECTION */}
-        <div className="hidden md:flex items-center gap-5 relative" ref={dropdownRef}>
-
-          {/* 🔔 ALERT ICON */}
+        <div
+          className="hidden md:flex items-center gap-5 relative"
+          ref={dropdownRef}
+        >
+          {/* 🔔 NOTIFICATION ICON */}
           {user && (
             <button
-              onClick={() => navigate("/alerts")}
-              className="relative"
+              onClick={() => navigate("/notifications")}
+              className="relative group"
             >
               <Bell
                 size={20}
-                className="text-red-500 hover:scale-110 transition"
+                className="text-red-500 group-hover:scale-110 transition"
               />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+
+              {/* DOT */}
+              {notificationCount > 0 && (
+                <>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full animate-ping"></span>
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full flex items-center justify-center text-[8px] text-white font-bold">
+                    {notificationCount > 9 ? "9+" : notificationCount}
+                  </span>
+                </>
+              )}
             </button>
           )}
 
@@ -187,7 +222,7 @@ const Navbar = () => {
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-60 bg-white border shadow-xl rounded-xl overflow-hidden">
+                <div className="absolute right-0 mt-3 w-60 bg-white border shadow-xl rounded-xl overflow-hidden animate-fadeIn">
                   <div className="px-5 py-4 border-b bg-gray-50">
                     <p className="font-semibold">{user.name}</p>
                     <p className="text-xs text-gray-500">
@@ -234,7 +269,7 @@ const Navbar = () => {
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg"
+              className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               <LogIn size={16} />
               Login
@@ -266,11 +301,11 @@ const Navbar = () => {
           ))}
 
           <Link
-            to="/alerts"
+            to="/notifications"
             className="flex items-center gap-3 text-red-500"
           >
             <Bell size={18} />
-            Alerts
+            Notifications
           </Link>
         </div>
       )}

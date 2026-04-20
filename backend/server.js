@@ -9,6 +9,7 @@ const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
 const adminRoutes = require("./routes/adminRoutes");
+const messageRoutes = require("./routes/messageRoutes"); // ✅ NEW
 const startWatcher = require("./utils/watcher");
 
 const {
@@ -22,7 +23,7 @@ const app = express();
    MIDDLEWARE
 ========================================= */
 
-// ✅ FIXED CORS (IMPORTANT)
+// ✅ FIXED CORS
 app.use(
   cors({
     origin: "http://localhost:5174",
@@ -50,7 +51,9 @@ app.get("/", (req, res) => {
 /* =========================================
    API ROUTES
 ========================================= */
+
 app.use("/api/admin", adminRoutes);
+app.use("/api/messages", messageRoutes); // ✅ NEW ROUTE
 
 /* =========================================
    404 HANDLER
@@ -63,8 +66,9 @@ app.use(notFound);
 app.use(errorHandler);
 
 /* =========================================
-   SERVER + DB + WATCHER START (FINAL FIXED FLOW)
+   SERVER + DB + WATCHER START
 ========================================= */
+
 const PORT = process.env.PORT || 5100;
 
 const startServer = async () => {
@@ -94,3 +98,4 @@ const startServer = async () => {
 };
 
 startServer();
+

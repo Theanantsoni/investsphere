@@ -9,9 +9,10 @@ import {
   Wallet,
   Activity,
   Eye,
-  Bell, // ✅ NEW
+  Bell,
   X,
   LogOut,
+  Send, // ✅ NEW ICON
 } from "lucide-react";
 
 const menu = [
@@ -24,7 +25,8 @@ const menu = [
   { name: "Wallets", path: "/wallets", icon: Wallet },
   { name: "Watchlist", path: "/watchlist", icon: Eye },
   { name: "Reports", path: "/reports", icon: FileText },
-  { name: "Notifications", path: "/notifications", icon: Bell }, // ✅ NEW
+  { name: "Notifications", path: "/notifications", icon: Bell },
+  { name: "Send Messages", path: "/send-messages", icon: Send }, // ✅ NEW MENU
 ];
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {

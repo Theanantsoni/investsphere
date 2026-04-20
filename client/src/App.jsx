@@ -51,6 +51,9 @@ import SendReport from "./pages/SendReport";
 /* ================= SECURITY ================= */
 import SecurityPage from "./pages/SecurityPage";
 
+/* ================= NOTIFICATIONS ================= */
+import Notifications from "./pages/Notifications";
+
 function App() {
   return (
     <BrowserRouter>
@@ -69,11 +72,20 @@ function App() {
 
         {/* ================= MAIN LAYOUT ================= */}
         <Route path="/" element={<MainLayout />}>
-          
+
           {/* ================= HOME ================= */}
           <Route index element={<HomePage />} />
 
           {/* ================= PROTECTED ================= */}
+
+          <Route
+            path="notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="profile"

@@ -37,6 +37,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const pnlRoutes = require("./routes/pnlRoutes");
 const portfolioOrderRoutes = require("./routes/portfolioOrderRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 /* ================= CONTROLLERS ================= */
 const {
@@ -126,6 +127,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/pnl", pnlRoutes);
 app.use("/api/orders", portfolioOrderRoutes);
+app.use("/api/messages", messageRoutes);
 
 /* ======================================================
 🔥 SIP PROXY (FINAL FIX)

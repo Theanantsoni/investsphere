@@ -106,3 +106,4 @@ registerSchema.index({ email: 1, phone: 1 });
 ====================================================== */
 
 module.exports = mongoose.model("Register", registerSchema);
+

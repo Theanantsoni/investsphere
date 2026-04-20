@@ -21,11 +21,13 @@ import Transactions from "./pages/Transactions";
 import Wallets from "./pages/Wallets";
 import Watchlist from "./pages/Watchlist";
 import Reports from "./pages/Reports";
-import Notifications from "./pages/Notifications"; // ✅ NEW
+import Notifications from "./pages/Notifications";
+import SendMessage from "./pages/SendMessage";
 
 const App = () => {
   const { user, loading, isAuthenticated } = useAuth();
 
+  /* ================= LOADER ================= */
   if (loading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-br from-[#020617] via-[#020617] to-[#020617]">
@@ -34,22 +36,18 @@ const App = () => {
     );
   }
 
+  /* ================= APP ================= */
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#020617] via-[#020617] to-[#020617] text-white antialiased">
-      <BrowserRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
+    <BrowserRouter>
+      <div className="min-h-screen w-full bg-gradient-to-br from-[#020617] via-[#020617] to-[#020617] text-white antialiased">
         <Routes>
-          {/* PUBLIC */}
+          {/* ================= PUBLIC ================= */}
           <Route
             path="/login"
             element={
               !isAuthenticated ? (
                 <div className="min-h-screen flex items-center justify-center px-4">
-                  <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-300">
+                  <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-6 md:p-8">
                     <Login />
                   </div>
                 </div>
@@ -59,14 +57,12 @@ const App = () => {
             }
           />
 
-          {/* PRIVATE */}
+          {/* ================= PRIVATE ================= */}
           <Route
             path="/"
             element={
               isAuthenticated ? (
-                <div className="min-h-screen flex w-full">
-                  <Layout user={user} />
-                </div>
+                <Layout user={user} />
               ) : (
                 <Navigate to="/login" replace />
               )
@@ -81,14 +77,15 @@ const App = () => {
             <Route path="wallets" element={<Wallets />} />
             <Route path="watchlist" element={<Watchlist />} />
             <Route path="reports" element={<Reports />} />
-            <Route path="notifications" element={<Notifications />} /> {/* ✅ NEW */}
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="send-messages" element={<SendMessage />} />
           </Route>
 
-          {/* FALLBACK */}
+          {/* ================= FALLBACK ================= */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
-    </div>
+      </div>
+    </BrowserRouter>
   );
 };
 
