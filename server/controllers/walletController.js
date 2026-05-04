@@ -60,7 +60,6 @@ exports.getWallet = async (req, res) => {
       success: true,
       wallet,
     });
-
   } catch (err) {
     console.error("GET WALLET ERROR:", err);
 
@@ -112,7 +111,6 @@ exports.addMoney = async (req, res) => {
       message: "Money added successfully",
       wallet,
     });
-
   } catch (err) {
     console.error("ADD MONEY ERROR:", err);
 
@@ -171,7 +169,6 @@ exports.withdrawMoney = async (req, res) => {
       message: "Withdrawal successful",
       wallet,
     });
-
   } catch (err) {
     console.error("WITHDRAW ERROR:", err);
 
@@ -265,7 +262,6 @@ exports.transferMoney = async (req, res) => {
       message: "Transfer successful",
       wallet: sender,
     });
-
   } catch (err) {
     console.error("TRANSFER ERROR:", err);
 

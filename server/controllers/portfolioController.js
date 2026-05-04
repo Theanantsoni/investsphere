@@ -51,29 +51,32 @@ const groupStocks = (data) => {
 };
 
 /* ====================================================== */
-/* 🔥 GROUP SIP (FINAL CORRECT + UI READY) */
+/* 🔥 GROUP SIP (FIXED STATUS + ID HANDLING) */
 const groupSIPs = (data) => {
   const map = {};
 
   data.forEach((item) => {
+    if (item.status === "withdrawn") return;
+
     const key = item.assetCode;
 
     if (!map[key]) {
       map[key] = {
-        _id: item._id,
+        _id: item._id, // fallback (will update below)
+        ids: [], // 🔥 IMPORTANT: store all SIP ids
         assetType: "sip",
         assetCode: item.assetCode,
         assetName: item.assetName,
-
         monthlyAmount: 0,
         durationMonths: 0,
         installmentsPaid: 0,
-
         totalInvestment: 0,
+        status: item.status || "active",
       };
     }
 
-    /* ================= RAW VALUES ================= */
+    // 🔥 collect all ids
+    map[key].ids.push(item._id);
 
     const monthly = Number(item.amount || 0);
     const durationYears = Number(item.duration || 0);
@@ -91,21 +94,27 @@ const groupSIPs = (data) => {
         0
     );
 
-    /* ================= FIXED LOGIC ================= */
-
-    // ✅ Always assign monthly (never skip)
     map[key].monthlyAmount = monthly;
 
-    // ✅ Duration should not become 0 if data exists
     if (durationMonths > 0) {
-      map[key].durationMonths = durationMonths;
+      map[key].durationMonths = Math.max(
+        map[key].durationMonths,
+        durationMonths
+      );
     }
 
-    // ✅ Installments count
     map[key].installmentsPaid += installments;
-
-    // ✅ Total investment
     map[key].totalInvestment += invested;
+
+    // 🔥 STATUS PRIORITY FIX
+    if (item.status === "active") {
+      map[key].status = "active";
+    } else if (
+      item.status === "stopped" &&
+      map[key].status !== "active"
+    ) {
+      map[key].status = "stopped";
+    }
   });
 
   return Object.values(map).map((item) => {
@@ -113,6 +122,8 @@ const groupSIPs = (data) => {
 
     return {
       ...item,
+      _id: item.ids[0], // 🔥 frontend uses this
+      ids: item.ids, // 🔥 future-safe
       invested: item.totalInvestment,
       current,
       profit: current - item.totalInvestment,

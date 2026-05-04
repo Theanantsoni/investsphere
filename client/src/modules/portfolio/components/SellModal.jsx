@@ -8,6 +8,14 @@ const SellModal = ({ asset, user, onClose, onSuccess }) => {
   const [price, setPrice] = useState(asset?.avgPrice || 1);
   const [loading, setLoading] = useState(false);
 
+  /* ================= NORMALIZE TYPE ================= */
+  const normalizedType =
+    asset?.assetType === "stocks"
+      ? "stock"
+      : asset?.assetType === "ipo"
+      ? "ipo"
+      : asset?.assetType;
+
   /* ================= MARKET PRICE ================= */
   useEffect(() => {
     if (orderType === "market") {
@@ -39,11 +47,16 @@ const SellModal = ({ asset, user, onClose, onSuccess }) => {
         return;
       }
 
+      const confirmSell = window.confirm(
+        `Sell ${safeQty} units of ${asset.assetName}?`
+      );
+      if (!confirmSell) return;
+
       setLoading(true);
 
       const payload = {
         assetId: asset._id,
-        type: asset.assetType,
+        type: normalizedType, // 🔥 FIXED
         assetCode: asset.assetCode,
         quantity: safeQty,
         price: safePrice,
@@ -69,7 +82,7 @@ const SellModal = ({ asset, user, onClose, onSuccess }) => {
         throw new Error(data.message || "Sell failed");
       }
 
-      alert("✅ Sell order executed");
+      alert("✅ Sell order executed successfully");
 
       if (onSuccess) await onSuccess();
 

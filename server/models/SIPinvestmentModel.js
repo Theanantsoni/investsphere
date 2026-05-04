@@ -32,6 +32,13 @@ const SIPinvestmentSchema = new mongoose.Schema(
       enum: ["sip"],
     },
 
+    /* 🔥 NEW STATUS FIELD (STOP / WITHDRAW SUPPORT) */
+    status: {
+      type: String,
+      enum: ["active", "stopped", "withdrawn"],
+      default: "active",
+    },
+
     amount: {
       type: Number,
       required: true,

@@ -7,6 +7,8 @@ const express = require("express");
 const {
   addSIPinvestment,
   getUserSIPinvestments,
+  stopSIPinvestment,
+  withdrawSIPinvestment,
 } = require("../controllers/SIPinvestmentController");
 
 /* ======================================================
@@ -36,6 +38,8 @@ BODY:
   assetName,
   amount,
   duration,
+  installments,
+  quantity,
   totalInvested,
   expectedReturn,
   expectedProfit,
@@ -59,6 +63,28 @@ router.get(
   "/user",
   // authMiddleware, // 🔐 enable later
   getUserSIPinvestments
+);
+
+/* ================= STOP SIP ================= */
+/*
+PUT /api/sip-investments/stop/:id
+*/
+
+router.put(
+  "/stop/:id",
+  // authMiddleware,
+  stopSIPinvestment
+);
+
+/* ================= WITHDRAW SIP ================= */
+/*
+PUT /api/sip-investments/withdraw/:id
+*/
+
+router.put(
+  "/withdraw/:id",
+  // authMiddleware,
+  withdrawSIPinvestment
 );
 
 /* ================= HEALTH CHECK ================= */

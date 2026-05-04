@@ -22,7 +22,7 @@ const transactionSchema = new mongoose.Schema(
     /* ================= ASSET ================= */
     assetType: {
       type: String,
-      enum: ["stock", "sip", "ipo"],
+      enum: ["stock", "stocks", "sip", "ipo"], // 🔥 FIX: added "stocks"
       required: true,
     },
 

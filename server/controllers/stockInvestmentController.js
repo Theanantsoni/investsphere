@@ -24,8 +24,8 @@ const addStockInvestment = async (req, res) => {
     if (
       !userEmail ||
       !symbol ||
-      !quantity ||
-      !price ||
+      quantity === undefined ||
+      price === undefined ||
       totalAmount === undefined
     ) {
       return res.status(400).json({
@@ -53,17 +53,24 @@ const addStockInvestment = async (req, res) => {
 
     /* ================= EXTRA VALIDATION ================= */
 
-    if (safeData.quantity <= 0) {
+    if (isNaN(safeData.quantity) || safeData.quantity <= 0) {
       return res.status(400).json({
         success: false,
         message: "Quantity must be greater than 0",
       });
     }
 
-    if (safeData.price <= 0) {
+    if (isNaN(safeData.price) || safeData.price <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid price",
+      });
+    }
+
+    if (isNaN(safeData.totalAmount) || safeData.totalAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid total amount",
       });
     }
 
@@ -78,7 +85,7 @@ const addStockInvestment = async (req, res) => {
     await createTransaction({
       userEmail: safeData.userEmail,
       username: safeData.username,
-      assetType: "stocks", // ✅ FIXED (was "stock")
+      assetType: "stocks",
       assetCode: safeData.symbol,
       assetName: safeData.companyName,
       type: "BUY",
@@ -101,7 +108,7 @@ const addStockInvestment = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message || "Server Error",
     });
   }
 };
@@ -128,7 +135,7 @@ const getUserStockInvestments = async (req, res) => {
     /* ================= SUMMARY ================= */
 
     const totalInvested = investments.reduce(
-      (acc, item) => acc + item.totalAmount,
+      (acc, item) => acc + (item.totalAmount || 0),
       0
     );
 
