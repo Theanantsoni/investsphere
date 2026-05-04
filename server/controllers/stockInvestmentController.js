@@ -78,7 +78,7 @@ const addStockInvestment = async (req, res) => {
     await createTransaction({
       userEmail: safeData.userEmail,
       username: safeData.username,
-      assetType: "stock",
+      assetType: "stocks", // ✅ FIXED (was "stock")
       assetCode: safeData.symbol,
       assetName: safeData.companyName,
       type: "BUY",
@@ -96,7 +96,6 @@ const addStockInvestment = async (req, res) => {
       message: "Stock Investment Added Successfully",
       data: investment,
     });
-
   } catch (error) {
     console.error("Stock Investment Error:", error);
 
@@ -139,7 +138,6 @@ const getUserStockInvestments = async (req, res) => {
       totalInvested,
       data: investments,
     });
-
   } catch (error) {
     console.error("Fetch Stock Investments Error:", error);
 

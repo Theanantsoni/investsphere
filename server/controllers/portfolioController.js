@@ -4,7 +4,7 @@ const IPOInvestment = require("../models/IPOinvestmentModel");
 const Transaction = require("../models/TransactionModel");
 
 /* ====================================================== */
-/* 🔥 GROUP STOCK */
+/* 🔥 GROUP STOCK (UNCHANGED CORE LOGIC) */
 const groupStocks = (data) => {
   const map = {};
 
@@ -14,7 +14,7 @@ const groupStocks = (data) => {
     if (!map[key]) {
       map[key] = {
         _id: item._id,
-        assetType: "stock",
+        assetType: "stocks",
         assetCode: item.symbol,
         assetName: item.companyName,
         quantity: 0,
@@ -51,7 +51,7 @@ const groupStocks = (data) => {
 };
 
 /* ====================================================== */
-/* 🔥 GROUP SIP (FIXED STRONG) */
+/* 🔥 GROUP SIP (FINAL CORRECT + UI READY) */
 const groupSIPs = (data) => {
   const map = {};
 
@@ -64,38 +64,55 @@ const groupSIPs = (data) => {
         assetType: "sip",
         assetCode: item.assetCode,
         assetName: item.assetName,
-        quantity: 0,
+
+        monthlyAmount: 0,
+        durationMonths: 0,
+        installmentsPaid: 0,
+
         totalInvestment: 0,
       };
     }
 
-    const qty = Number(
-      item.quantity || item.installments || 1
+    /* ================= RAW VALUES ================= */
+
+    const monthly = Number(item.amount || 0);
+    const durationYears = Number(item.duration || 0);
+    const durationMonths = durationYears * 12;
+
+    const installments = Number(
+      item.installments || item.quantity || 0
     );
 
     const invested = Number(
-      item.totalInvestment ||
+      item.totalInvested ||
+        item.totalInvestment ||
         item.totalAmount ||
-        item.amount ||
-        (item.price || 0) * qty ||
+        monthly * installments ||
         0
     );
 
-    map[key].quantity += qty;
+    /* ================= FIXED LOGIC ================= */
+
+    // ✅ Always assign monthly (never skip)
+    map[key].monthlyAmount = monthly;
+
+    // ✅ Duration should not become 0 if data exists
+    if (durationMonths > 0) {
+      map[key].durationMonths = durationMonths;
+    }
+
+    // ✅ Installments count
+    map[key].installmentsPaid += installments;
+
+    // ✅ Total investment
     map[key].totalInvestment += invested;
   });
 
   return Object.values(map).map((item) => {
-    const avgPrice =
-      item.quantity > 0
-        ? item.totalInvestment / item.quantity
-        : 0;
-
-    const current = item.totalInvestment; // SIP no live price
+    const current = item.totalInvestment;
 
     return {
       ...item,
-      avgPrice,
       invested: item.totalInvestment,
       current,
       profit: current - item.totalInvestment,
@@ -104,7 +121,7 @@ const groupSIPs = (data) => {
 };
 
 /* ====================================================== */
-/* 🔥 GROUP IPO (FIXED STRONG) */
+/* 🔥 GROUP IPO (UNCHANGED CORE LOGIC) */
 const groupIPOs = (data) => {
   const map = {};
 
@@ -163,6 +180,7 @@ const groupIPOs = (data) => {
 };
 
 /* ====================================================== */
+/* 🔥 MAIN PORTFOLIO API */
 const getPortfolio = async (req, res) => {
   try {
     const { email } = req.query;

@@ -14,8 +14,8 @@ const addSIPinvestment = async (req, res) => {
       assetName,
       amount,
       duration,
-      installments, // 🔥 FIX: get from frontend
-      quantity,     // 🔥 optional sync
+      installments,
+      quantity,
       totalInvested,
       expectedReturn,
       expectedProfit,
@@ -30,7 +30,7 @@ const addSIPinvestment = async (req, res) => {
       !assetCode ||
       !amount ||
       !duration ||
-      !installments || // 🔥 REQUIRED FIX
+      !installments ||
       totalInvested === undefined ||
       expectedReturn === undefined ||
       expectedProfit === undefined
@@ -43,20 +43,26 @@ const addSIPinvestment = async (req, res) => {
 
     /* ================= TYPE SAFETY ================= */
 
+    const safeInstallments = Number(installments);
+    const safeAmount = Number(amount);
+    const safeDuration = Number(duration);
+    const safeQuantity = Number(quantity || safeInstallments);
+    const safeTotalInvested = Number(totalInvested);
+
     const safeData = {
       userEmail: String(userEmail),
       username: username ? String(username) : "User",
       assetCode: String(assetCode),
       assetName: assetName ? String(assetName) : "Unknown Asset",
       type: "sip",
-      amount: Number(amount),
-      duration: Number(duration),
+      amount: safeAmount,
+      duration: safeDuration,
 
-      /* 🔥 FIX CORE */
-      installments: Number(installments),
-      quantity: Number(quantity || installments),
+      /* 🔥 CORE FIXED STRUCTURE */
+      installments: safeInstallments,
+      quantity: safeQuantity,
 
-      totalInvested: Number(totalInvested),
+      totalInvested: safeTotalInvested,
       expectedReturn: Number(expectedReturn),
       expectedProfit: Number(expectedProfit),
       category: category ? String(category) : "",

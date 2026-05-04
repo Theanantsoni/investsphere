@@ -1,32 +1,21 @@
 import React, { useState, useMemo } from "react";
-import {
-  ArrowUpDown,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import {
   getTypeLabel,
   getTypeColor,
 } from "../constants/portfolioConstants";
 import { usePortfolioContext } from "../context/PortfolioContext";
-
-/* ✅ FIXED IMPORT */
 import SellModal from "./SellModal";
 
-/* ======================================================
- COMPONENT
-====================================================== */
 const PortfolioTable = ({ assets, fetchPortfolio }) => {
   const { user } = usePortfolioContext();
 
   const [sortKey, setSortKey] = useState("invested");
   const [sortOrder, setSortOrder] = useState("desc");
-
+  const [selectedType, setSelectedType] = useState("stocks");
   const [selectedAsset, setSelectedAsset] = useState(null);
 
-  /* ======================================================
- SORT HANDLER
-====================================================== */
+  /* ================= SORT ================= */
   const handleSort = (key) => {
     if (sortKey === key) {
       setSortOrder((prev) =>
@@ -38,24 +27,33 @@ const PortfolioTable = ({ assets, fetchPortfolio }) => {
     }
   };
 
-  /* ======================================================
- SORTED DATA
-====================================================== */
-  const sortedAssets = useMemo(() => {
-    if (!assets || assets.length === 0) return [];
+  /* ================= FILTER ================= */
+  const filteredAssets = useMemo(() => {
+    if (!assets) return [];
 
-    return [...assets].sort((a, b) => {
+    return assets.filter((item) => {
+      const type = (item.assetType || item.type || "").toLowerCase();
+
+      if (selectedType === "stocks") return type === "stocks";
+      if (selectedType === "ipo") return type === "ipo";
+      if (selectedType === "sip") return type === "sip";
+
+      return false;
+    });
+  }, [assets, selectedType]);
+
+  /* ================= SORTED ================= */
+  const sortedAssets = useMemo(() => {
+    return [...filteredAssets].sort((a, b) => {
       const valA = a[sortKey] || 0;
       const valB = b[sortKey] || 0;
 
       if (sortOrder === "asc") return valA - valB;
       return valB - valA;
     });
-  }, [assets, sortKey, sortOrder]);
+  }, [filteredAssets, sortKey, sortOrder]);
 
-  /* ======================================================
- OPEN SELL MODAL
-====================================================== */
+  /* ================= SELL ================= */
   const handleOpenSell = (asset) => {
     if (!asset.quantity || asset.quantity <= 0) {
       alert("❌ No quantity available");
@@ -64,128 +62,243 @@ const PortfolioTable = ({ assets, fetchPortfolio }) => {
     setSelectedAsset(asset);
   };
 
-  /* ======================================================
- EMPTY STATE
-====================================================== */
+  /* ================= EMPTY ================= */
   if (!assets || assets.length === 0) {
     return (
-      <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 text-center text-gray-500 border border-gray-100">
-        <p className="text-lg font-medium">
-          No portfolio data available
-        </p>
-        <p className="text-sm text-gray-400 mt-1">
-          Start investing to see your assets here
-        </p>
+      <div className="bg-white rounded-2xl shadow-lg p-8 text-center text-gray-500">
+        No portfolio data available
       </div>
     );
   }
 
-  /* ======================================================
- RENDER
-====================================================== */
+  /* ================= SIP TABLE ================= */
+  const renderSIPTable = () => (
+    <table className="w-full text-sm min-w-[900px]">
+      <thead className="bg-gray-100 text-gray-600">
+        <tr>
+          <th className="p-4 text-left">Fund</th>
+          <th className="p-4 text-center">Type</th>
+
+          <th className="p-4 text-center">Monthly</th>
+          <th className="p-4 text-center">Duration</th>
+          <th className="p-4 text-center">Paid</th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("invested")}
+          >
+            Invested <ArrowUpDown size={14} />
+          </th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("current")}
+          >
+            Current <ArrowUpDown size={14} />
+          </th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("profit")}
+          >
+            Profit <ArrowUpDown size={14} />
+          </th>
+
+          <th className="p-4 text-center">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {sortedAssets.map((item, index) => {
+          const isProfit = item.profit >= 0;
+
+          return (
+            <tr
+              key={item._id || index}
+              className="border-t hover:bg-gray-50"
+            >
+              <td className="p-4 font-medium">
+                {item.assetName || item.name}
+              </td>
+
+              <td className="p-4 text-center">
+                <span
+                  className={`text-xs px-3 py-1 rounded-full text-white ${getTypeColor(
+                    item.assetType || item.type
+                  )}`}
+                >
+                  {getTypeLabel(item.assetType || item.type)}
+                </span>
+              </td>
+
+              <td className="p-4 text-center">
+                ₹{item.monthlyAmount || 0}
+              </td>
+
+              <td className="p-4 text-center">
+                {item.durationMonths || 0} mo
+              </td>
+
+              <td className="p-4 text-center">
+                {item.installmentsPaid || 0}
+              </td>
+
+              <td className="p-4 text-center">
+                ₹{Number(item.invested).toLocaleString("en-IN")}
+              </td>
+
+              <td className="p-4 text-center">
+                ₹{Number(item.current).toLocaleString("en-IN")}
+              </td>
+
+              <td
+                className={`p-4 text-center ${
+                  isProfit ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                ₹{Number(item.profit).toLocaleString("en-IN")}
+              </td>
+
+              <td className="p-4 text-center">
+                <div className="flex gap-2 justify-center">
+                  <button className="px-3 py-1 bg-yellow-500 text-white rounded">
+                    Stop
+                  </button>
+                  <button className="px-3 py-1 bg-blue-500 text-white rounded">
+                    Withdraw
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  /* ================= STOCK / IPO TABLE ================= */
+  const renderNormalTable = () => (
+    <table className="w-full text-sm min-w-[700px]">
+      <thead className="bg-gray-100 text-gray-600">
+        <tr>
+          <th className="p-4 text-left">Asset</th>
+          <th className="p-4 text-center">Type</th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("invested")}
+          >
+            Invested <ArrowUpDown size={14} />
+          </th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("current")}
+          >
+            Current <ArrowUpDown size={14} />
+          </th>
+
+          <th
+            className="p-4 text-center cursor-pointer"
+            onClick={() => handleSort("profit")}
+          >
+            Profit <ArrowUpDown size={14} />
+          </th>
+
+          <th className="p-4 text-center">Qty</th>
+          <th className="p-4 text-center">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {sortedAssets.map((item, index) => {
+          const isProfit = item.profit >= 0;
+
+          return (
+            <tr
+              key={item._id || index}
+              className="border-t hover:bg-gray-50"
+            >
+              <td className="p-4 font-medium">
+                {item.assetName || item.name}
+              </td>
+
+              <td className="p-4 text-center">
+                <span
+                  className={`text-xs px-3 py-1 rounded-full text-white ${getTypeColor(
+                    item.assetType || item.type
+                  )}`}
+                >
+                  {getTypeLabel(item.assetType || item.type)}
+                </span>
+              </td>
+
+              <td className="p-4 text-center">
+                ₹{Number(item.invested).toLocaleString("en-IN")}
+              </td>
+
+              <td className="p-4 text-center">
+                ₹{Number(item.current).toLocaleString("en-IN")}
+              </td>
+
+              <td
+                className={`p-4 text-center ${
+                  isProfit ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                ₹{Number(item.profit).toLocaleString("en-IN")}
+              </td>
+
+              <td className="p-4 text-center">
+                {item.quantity || 0}
+              </td>
+
+              <td className="p-4 text-center">
+                <button
+                  onClick={() => handleOpenSell(item)}
+                  className="px-4 py-1.5 rounded-lg bg-red-500 text-white"
+                >
+                  Sell
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  /* ================= UI ================= */
   return (
     <>
-      <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        
+        {/* FILTER BUTTONS */}
+        <div className="flex gap-3 p-4 border-b">
+          {["stocks", "ipo", "sip"].map((type) => (
+            <button
+              key={type}
+              onClick={() => setSelectedType(type)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                selectedType === type
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {type.toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[700px]">
-            <thead className="bg-gradient-to-r from-gray-100 to-gray-50 text-gray-600 sticky top-0 z-10">
-              <tr>
-                <th className="p-4 text-left font-semibold">Asset</th>
-                <th className="p-4 text-center font-semibold">Type</th>
-
-                <th
-                  className="p-4 text-center cursor-pointer"
-                  onClick={() => handleSort("invested")}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    Invested <ArrowUpDown size={14} />
-                  </div>
-                </th>
-
-                <th
-                  className="p-4 text-center cursor-pointer"
-                  onClick={() => handleSort("current")}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    Current <ArrowUpDown size={14} />
-                  </div>
-                </th>
-
-                <th
-                  className="p-4 text-center cursor-pointer"
-                  onClick={() => handleSort("profit")}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    Profit <ArrowUpDown size={14} />
-                  </div>
-                </th>
-
-                <th className="p-4 text-center font-semibold">Qty</th>
-                <th className="p-4 text-center font-semibold">Action</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {sortedAssets.map((item, index) => {
-                const isProfit = item.profit >= 0;
-
-                return (
-                  <tr
-                    key={item._id || `${item.type}-${index}`}
-                    className="border-t hover:bg-gray-50/70 transition"
-                  >
-                    <td className="p-4 font-medium">
-                      {item.assetName || item.name}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full text-white ${getTypeColor(
-                          item.assetType || item.type
-                        )}`}
-                      >
-                        {getTypeLabel(item.assetType || item.type)}
-                      </span>
-                    </td>
-
-                    <td className="p-4 text-center">
-                      ₹{Number(item.invested).toLocaleString("en-IN")}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      ₹{Number(item.current).toLocaleString("en-IN")}
-                    </td>
-
-                    <td
-                      className={`p-4 text-center ${
-                        isProfit ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      ₹{Number(item.profit).toLocaleString("en-IN")}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {item.quantity || 0}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleOpenSell(item)}
-                        disabled={!item.quantity}
-                        className="px-4 py-1.5 rounded-lg bg-red-500 text-white"
-                      >
-                        Sell
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {selectedType === "sip"
+            ? renderSIPTable()
+            : renderNormalTable()}
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* SELL MODAL */}
       {selectedAsset && (
         <SellModal
           asset={selectedAsset}

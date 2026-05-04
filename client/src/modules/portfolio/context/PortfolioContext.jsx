@@ -70,7 +70,7 @@ export const PortfolioProvider = ({ children }) => {
 
       setTransactions(mergedTransactions);
 
-      /* ================= NORMALIZER ================= */
+      /* ================= NORMALIZER (🔥 FIXED FOR SIP) ================= */
       const normalize = (item) => {
         const type = (
           item.assetType ||
@@ -78,10 +78,62 @@ export const PortfolioProvider = ({ children }) => {
           "unknown"
         ).toLowerCase();
 
+        /* 🔥 SIP SPECIAL HANDLING */
+        if (type === "sip") {
+          const monthly = Number(item.monthlyAmount ?? item.amount ?? 0);
+          const durationMonths = Number(
+            item.durationMonths ?? (item.duration || 0) * 12
+          );
+          const paid = Number(
+            item.installmentsPaid ??
+              item.installments ??
+              item.quantity ??
+              0
+          );
+
+          const invested = Number(
+            item.invested ??
+              item.totalInvestment ??
+              item.totalInvested ??
+              monthly * paid ??
+              0
+          );
+
+          const current = Number(item.current ?? invested);
+          const profit = current - invested;
+
+          return {
+            _id: item._id,
+            assetCode: item.assetCode || "",
+            assetName: item.assetName || "",
+            name: item.assetName || "",
+            assetType: "sip",
+            type: "sip",
+
+            /* 🔥 IMPORTANT */
+            monthlyAmount: monthly,
+            durationMonths,
+            installmentsPaid: paid,
+
+            invested,
+            current,
+            profit,
+
+            percentage:
+              invested > 0
+                ? Number(((profit / invested) * 100).toFixed(2))
+                : 0,
+
+            quantity: paid,
+            avgPrice: monthly,
+            status: item.status || "active",
+          };
+        }
+
+        /* ================= NORMAL (STOCK / IPO) ================= */
         const quantity = Number(
           item.quantity ||
             item.totalShares ||
-            item.installments ||
             0
         );
 
@@ -103,7 +155,7 @@ export const PortfolioProvider = ({ children }) => {
 
         return {
           _id: item._id,
-          assetCode: item.assetCode || item.code || item.symbol || "",
+          assetCode: item.assetCode || item.symbol || "",
           assetName: item.assetName || item.name || "",
           name: item.assetName || item.name || "",
           assetType: type,
@@ -120,7 +172,6 @@ export const PortfolioProvider = ({ children }) => {
 
           quantity,
           avgPrice,
-
           status: item.status || "active",
         };
       };
@@ -149,9 +200,9 @@ export const PortfolioProvider = ({ children }) => {
           ? Number(((totalProfit / totalInvested) * 100).toFixed(2))
           : 0;
 
-      /* ================= ALLOCATION (🔥 FIXED) ================= */
+      /* ================= ALLOCATION ================= */
       const grouped = {
-        stock: 0,
+        stocks: 0,
         sip: 0,
         ipo: 0,
       };
