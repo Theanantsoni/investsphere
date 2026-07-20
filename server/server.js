@@ -7,9 +7,11 @@ const helmet = require("helmet");
 const axios = require("axios");
 
 /* ================= ENV ================= */
-require("dotenv").config({
-  path: path.resolve(__dirname, "../.env"),
-});
+// require("dotenv").config({
+//   path: path.resolve(__dirname, "../.env"),
+// });
+
+require("dotenv").config();
 
 /* ================= DB ================= */
 const connectDB = require("./config/db");
@@ -69,7 +71,8 @@ app.use(
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
-];
+  process.env.CLIENT_URL,
+].filter(Boolean);
 
 app.use(
   cors({

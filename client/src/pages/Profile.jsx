@@ -11,7 +11,9 @@ import {
   Clock,
 } from "lucide-react";
 
-const API = "http://localhost:5000/api";
+import API from "../../config/api"; 
+
+const API = import.meta.env.VITE_API_URL;
 
 const Profile = () => {
   const [user, setUser] = useState(null);

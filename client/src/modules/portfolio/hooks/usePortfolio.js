@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import API from "../../config/api"; 
 
 /* ======================================================
  API CONFIG
 ====================================================== */
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL;
 
 /* ======================================================
  CUSTOM HOOK
