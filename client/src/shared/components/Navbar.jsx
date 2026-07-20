@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Link,
-  NavLink,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 
 import {
   Home,
@@ -38,19 +33,34 @@ const Navbar = () => {
 
   /* ================= USER STATE ================= */
   useEffect(() => {
-    try {
-      const storedUser = JSON.parse(
-        localStorage.getItem("investsphere_user")
-      );
+    const loadUser = () => {
+      try {
+        const storedUser = JSON.parse(
+          localStorage.getItem("investsphere_user"),
+        );
 
-      if (storedUser?.email) {
-        setUser(storedUser);
-      } else {
+        if (storedUser?.email) {
+          setUser(storedUser);
+        } else {
+          setUser(null);
+        }
+      } catch {
         setUser(null);
       }
-    } catch {
-      setUser(null);
-    }
+    };
+
+    // Initial load
+    loadUser();
+
+    // Route change
+    loadUser();
+
+    // Profile update event
+    window.addEventListener("userUpdated", loadUser);
+
+    return () => {
+      window.removeEventListener("userUpdated", loadUser);
+    };
   }, [location.pathname]);
 
   /* ================= FETCH NOTIFICATIONS COUNT ================= */
@@ -89,6 +99,7 @@ const Navbar = () => {
   /* ================= LOGOUT ================= */
   const logout = () => {
     localStorage.removeItem("investsphere_user");
+    window.dispatchEvent(new Event("userUpdated"));
     navigate("/login");
   };
 
@@ -139,7 +150,6 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
-
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-3 group">
           <img
@@ -160,9 +170,7 @@ const Navbar = () => {
               to={item.path}
               className={({ isActive }) =>
                 `flex items-center gap-2 transition ${
-                  isActive
-                    ? "text-blue-600"
-                    : "hover:text-blue-600"
+                  isActive ? "text-blue-600" : "hover:text-blue-600"
                 }`
               }
             >
@@ -209,15 +217,17 @@ const Navbar = () => {
               >
                 <div className="text-right">
                   <p className="text-xs text-gray-500">Welcome</p>
-                  <p className="font-semibold text-gray-800">
-                    {user.name}
-                  </p>
+                  <p className="font-semibold text-gray-800">{user.name}</p>
                 </div>
 
                 <img
-                  src={profileImage}
+                  src={
+                    profileImage
+                      ? `${profileImage}?t=${user?.updatedAt || Date.now()}`
+                      : `https://ui-avatars.com/api/?name=${user?.name || "User"}`
+                  }
                   alt="profile"
-                  className="w-10 h-10 rounded-full border-2 border-blue-500"
+                  className="w-10 h-10 rounded-full border-2 border-blue-500 object-cover"
                 />
               </button>
 
@@ -225,9 +235,7 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-3 w-60 bg-white border shadow-xl rounded-xl overflow-hidden animate-fadeIn">
                   <div className="px-5 py-4 border-b bg-gray-50">
                     <p className="font-semibold">{user.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {user.email}
-                    </p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
 
                   <Link
@@ -278,10 +286,7 @@ const Navbar = () => {
         </div>
 
         {/* MOBILE BUTTON */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden"
-        >
+        <button onClick={() => setIsOpen(!isOpen)} className="md:hidden">
           {isOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>

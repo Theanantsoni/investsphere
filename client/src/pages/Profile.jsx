@@ -6,7 +6,6 @@ import {
   Calendar,
   CreditCard,
   User,
-  Upload,
   ShieldCheck,
   Plus,
   Clock,
@@ -27,7 +26,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const storedUser = JSON.parse(
-          localStorage.getItem("investsphere_user")
+          localStorage.getItem("investsphere_user"),
         );
 
         if (!storedUser || !storedUser.email) {
@@ -95,6 +94,7 @@ const Profile = () => {
 
     try {
       const storedUser = JSON.parse(localStorage.getItem("investsphere_user"));
+
       const email = storedUser?.email;
 
       const formData = new FormData();
@@ -108,20 +108,35 @@ const Profile = () => {
 
       const data = await res.json();
 
-      if (data.success) {
-        setUser(data.user);
-        setPreview(null);
-        setFile(null);
-        alert("Profile updated ✅");
-      } else {
-        alert(data.message);
+      if (!data.success) {
+        alert(data.message || "Upload failed");
+        return;
       }
-    } catch (err) {
-      console.log(err);
-      alert("Upload failed");
-    }
 
-    setLoading(false);
+      const profileRes = await fetch(`${API}/users/profile/${email}`);
+      const profileData = await profileRes.json();
+
+      if (profileData.success) {
+        setUser(profileData.user);
+
+        localStorage.setItem(
+          "investsphere_user",
+          JSON.stringify(profileData.user),
+        );
+
+        window.dispatchEvent(new Event("userUpdated"));
+      }
+
+      setPreview(null);
+      setFile(null);
+
+      alert("Profile updated ✅");
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* ================= STATES ================= */
@@ -148,10 +163,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-6">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
-
         {/* HEADER */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-8 flex items-center gap-6 text-white">
-
           {/* PROFILE IMAGE */}
           <div className="relative group">
             <img
@@ -165,9 +178,7 @@ const Profile = () => {
 
             <label className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer">
               <Plus size={22} className="text-white" />
-              <span className="text-xs text-white mt-1">
-                Upload Photo
-              </span>
+              <span className="text-xs text-white mt-1">Upload Photo</span>
               <input type="file" hidden onChange={handleImageChange} />
             </label>
           </div>
@@ -190,7 +201,6 @@ const Profile = () => {
 
         {/* DETAILS */}
         <div className="p-10 grid md:grid-cols-2 gap-6">
-
           {/* LEFT */}
           <ProfileItem icon={<User />} label="Name" value={user.name} />
           <ProfileItem icon={<Mail />} label="Email" value={user.email} />
@@ -224,12 +234,10 @@ const Profile = () => {
               )}
             </div>
           </div>
-
         </div>
 
         {/* FOOTER */}
         <div className="border-t px-10 py-4 bg-gray-50 flex flex-col md:flex-row justify-between text-sm text-gray-600 gap-2">
-
           <div className="flex items-center gap-2">
             <Clock size={16} />
             <span>
@@ -243,9 +251,7 @@ const Profile = () => {
               Account Updated: <b>{formatDate(user.updatedAt)}</b>
             </span>
           </div>
-
         </div>
-
       </div>
     </div>
   );
