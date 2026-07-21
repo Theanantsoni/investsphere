@@ -10,7 +10,7 @@ import API from "../../../config/api";
 ====================================================== */
 
 const api = axios.create({
-  baseURL: API,
+  baseURL: `${API}/api`,
   timeout: 20000,
 });
 
