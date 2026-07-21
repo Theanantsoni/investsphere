@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 import useSIP from "../hooks/useSIP";
+import API from "../../../config/api";
 
 import SIPSearchBar from "../components/SIPSearchBar";
 import SIPFilters from "../components/SIPFilters";
@@ -62,7 +63,7 @@ const SIPPage = () => {
   const fetchWatchlist = async (email) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/watchlist/${email}`
+        `${API}/api/watchlist/${email}`
       );
 
       if (res.data?.success) {

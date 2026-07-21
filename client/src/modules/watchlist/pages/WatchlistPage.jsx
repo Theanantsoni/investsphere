@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { TrendingUp, BarChart3, Landmark, Star, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import API from "../../../config/api";
 
 import StockWatchlist from "../components/StockWatchlist";
 import SipWatchlist from "../components/SipWatchlist";
@@ -34,8 +35,8 @@ const WatchlistPage = () => {
   const fetchWatchlist = async (email) => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/watchlist/${email}`,
-      );
+  `${API}/api/watchlist/${email}`,
+);
 
       if (res.data.success) {
         setWatchlist(res.data.data);
@@ -51,7 +52,7 @@ const WatchlistPage = () => {
 
   const removeWatchlist = async (itemCode) => {
     try {
-      await axios.delete("http://localhost:5000/api/watchlist/remove", {
+      await axios.delete(`${API}/api/watchlist/remove`, {
         data: {
           email: user.email,
           itemCode,

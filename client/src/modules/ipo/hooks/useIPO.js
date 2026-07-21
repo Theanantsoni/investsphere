@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import API from "../../../config/api";
 
 const useIPO = (type) => {
   const [ipos, setIpos] = useState([]);
@@ -14,7 +15,7 @@ const useIPO = (type) => {
     setLoading(true);
     setError(null);
 
-    const url = `http://localhost:5000/api/ipo/${type}`;
+    const url = `${API}/api/ipo/${type}`;
 
     const response = await axios.get(url);
 

@@ -3,7 +3,6 @@ import axios from "axios";
 import IPOInvest from "./IPOInvest";
 import API from "../../../config/api";
 
-
 const IPOCard = ({ ipo }) => {
   const [watchLoading, setWatchLoading] = useState(false);
   const [user, setUser] = useState(null);
@@ -32,14 +31,10 @@ const IPOCard = ({ ipo }) => {
 
   const fetchWatchlist = async (email) => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/watchlist/${email}`
-      );
+      const res = await axios.get(`${API}/api/watchlist/${email}`);
 
       if (res.data.success) {
-        const codes = res.data.data.map((item) =>
-          String(item.itemCode)
-        );
+        const codes = res.data.data.map((item) => String(item.itemCode));
 
         setWatchlist(codes);
       }
@@ -86,8 +81,8 @@ const IPOCard = ({ ipo }) => {
     ipo.status === "upcoming"
       ? "bg-blue-100 text-blue-700"
       : ipo.status === "ongoing"
-      ? "bg-green-100 text-green-700"
-      : "bg-gray-100 text-gray-700";
+        ? "bg-green-100 text-green-700"
+        : "bg-gray-100 text-gray-700";
 
   /* ================= INVEST ================= */
 
@@ -108,7 +103,7 @@ const IPOCard = ({ ipo }) => {
     if (!user || !user.email) {
       showPopup(
         "Login Required",
-        "Please login first to add this IPO to your watchlist."
+        "Please login first to add this IPO to your watchlist.",
       );
       return;
     }
@@ -116,7 +111,7 @@ const IPOCard = ({ ipo }) => {
     if (alreadyAdded) {
       showPopup(
         "Already Added",
-        "This IPO is already present in your watchlist."
+        "This IPO is already present in your watchlist.",
       );
       return;
     }
@@ -124,15 +119,12 @@ const IPOCard = ({ ipo }) => {
     try {
       setWatchLoading(true);
 
-      const response = await axios.post(
-        `${API}/watchlist/add`,
-        {
-          email: user.email,
-          itemCode: String(ipo.symbol),
-          itemName: ipo.name,
-          type: "ipo",
-        }
-      );
+      const response = await axios.post(`${API}/api/watchlist/add`, {
+        email: user.email,
+        itemCode: String(ipo.symbol),
+        itemName: ipo.name,
+        type: "ipo",
+      });
 
       if (response.data.success) {
         setWatchlist((prev) => [...prev, String(ipo.symbol)]);
@@ -142,7 +134,7 @@ const IPOCard = ({ ipo }) => {
       showPopup(
         "Error",
         error.response?.data?.message ||
-          "Something went wrong. Please try again."
+          "Something went wrong. Please try again.",
       );
     } finally {
       setWatchLoading(false);
@@ -167,18 +159,34 @@ const IPOCard = ({ ipo }) => {
 
           {/* DETAILS */}
           <div className="space-y-1 text-sm text-slate-700">
-            <p><b>Symbol:</b> {ipo.symbol}</p>
-            <p><b>Exchange:</b> {ipo.exchange}</p>
-            <p><b>Open Date:</b> {formatDate(ipo.openDate)}</p>
-            <p><b>Close Date:</b> {formatDate(ipo.closeDate)}</p>
-            <p><b>Issue Price:</b> ₹{ipo.price}</p>
-            <p><b>Shares Offered:</b> {formatNumber(ipo.numberOfShares)}</p>
-            <p><b>Total Value:</b> ₹ {formatNumber(ipo.totalSharesValue)}</p>
+            <p>
+              <b>Symbol:</b> {ipo.symbol}
+            </p>
+            <p>
+              <b>Exchange:</b> {ipo.exchange}
+            </p>
+            <p>
+              <b>Open Date:</b> {formatDate(ipo.openDate)}
+            </p>
+            <p>
+              <b>Close Date:</b> {formatDate(ipo.closeDate)}
+            </p>
+            <p>
+              <b>Issue Price:</b> ₹{ipo.price}
+            </p>
+            <p>
+              <b>Shares Offered:</b> {formatNumber(ipo.numberOfShares)}
+            </p>
+            <p>
+              <b>Total Value:</b> ₹ {formatNumber(ipo.totalSharesValue)}
+            </p>
           </div>
 
           {/* STATUS */}
           <div className="mt-3">
-            <span className={`px-3 py-1 text-xs rounded-full font-semibold ${badgeColor} capitalize`}>
+            <span
+              className={`px-3 py-1 text-xs rounded-full font-semibold ${badgeColor} capitalize`}
+            >
               {ipo.status}
             </span>
           </div>
@@ -188,7 +196,6 @@ const IPOCard = ({ ipo }) => {
 
         {(ipo.status === "ongoing" || ipo.status === "upcoming") && (
           <div className="relative z-10 flex flex-col sm:flex-row gap-3 mt-5">
-
             {/* INVEST BUTTON */}
             {ipo.status === "ongoing" && (
               <button
@@ -219,11 +226,7 @@ const IPOCard = ({ ipo }) => {
 
       {/* ================= INVEST MODAL ================= */}
       {showInvest && (
-        <IPOInvest
-          ipo={ipo}
-          user={user}
-          onClose={() => setShowInvest(false)}
-        />
+        <IPOInvest ipo={ipo} user={user} onClose={() => setShowInvest(false)} />
       )}
 
       {/* ================= POPUP ================= */}

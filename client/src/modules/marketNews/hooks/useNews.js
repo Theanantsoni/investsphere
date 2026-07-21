@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API from "../../../config/api";
 
 const useNews = (page, category) => {
   const [news, setNews] = useState([]);
@@ -10,7 +11,7 @@ const useNews = (page, category) => {
       setLoading(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/market-news?page=${page}&category=${category}`
+          `${API}/api/market-news?page=${page}&category=${category}`
         );
         const data = await res.json();
 

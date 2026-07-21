@@ -72,7 +72,7 @@ function LoginPage() {
     try {
       setLoading(true);
 
-      const res = await axios.post(`${API}/login`, {
+      const res = await axios.post(`${API}/api/login`, {
         email: form.email.trim().toLowerCase(),
         password: form.password.trim(),
       });
@@ -123,7 +123,7 @@ function LoginPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/forgot-password/send-otp",
+        `${API}/api/forgot-password/send-otp`,
         { email }
       );
 
@@ -150,7 +150,7 @@ function LoginPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/forgot-password/verify-otp",
+        `${API}/api/forgot-password/verify-otp`,
         {
           email: email.trim().toLowerCase(),
           otp: otp.trim(),
@@ -186,7 +186,7 @@ function LoginPage() {
 
     try {
       const res = await axios.post(
-        `${API}/forgot-password/reset`,
+        `${API}/api/forgot-password/reset`,
         {
           email: email.trim().toLowerCase(),
           password: password.trim(),
@@ -194,7 +194,7 @@ function LoginPage() {
       );
 
       if (res.data.success) {
-        const loginRes = await axios.post(`${API}/login`, {
+        const loginRes = await axios.post(`${API}/api/login`, {
           email: email.trim().toLowerCase(),
           password: password.trim(),
         });
@@ -254,7 +254,7 @@ function LoginPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/find-email-by-mobile",
+        `${API}/api/find-email-by-mobile`,
         { phone }
       );
 

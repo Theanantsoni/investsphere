@@ -5,6 +5,7 @@ import React, {
   useCallback,
 } from "react";
 import { ArrowUpDown } from "lucide-react";
+import API from "../../../config/api";
 import {
   getTypeLabel,
   getTypeColor,
@@ -166,7 +167,7 @@ const PortfolioTable = ({ assets, fetchPortfolio }) => {
       setLoadingId(item._id);
 
       await axios.put(
-        `http://localhost:5000/api/sip-investments/stop/${item._id}`
+        `${API}/api/sip-investments/stop/${item._id}`
       );
 
       alert(
@@ -204,7 +205,7 @@ const PortfolioTable = ({ assets, fetchPortfolio }) => {
       setLoadingId(item._id);
 
       await axios.put(
-        `http://localhost:5000/api/sip-investments/withdraw/${item._id}`
+        `${API}/api/sip-investments/withdraw/${item._id}`
       );
 
       alert("✅ SIP Withdrawn Successfully");

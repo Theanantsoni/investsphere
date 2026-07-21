@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
+import API from "../config/api";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -204,7 +205,7 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/register/send-otp", {
+      const res = await fetch(`${API}/api/register/send-otp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -265,7 +266,7 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/register/verify-otp", {
+      const res = await fetch(`${API}/api/register/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
 

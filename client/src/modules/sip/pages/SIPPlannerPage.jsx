@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import axios from "axios";
+import API from "../../../config/api";
 
 import useSIP from "../hooks/useSIP";
 import SIPCalculatorForm from "../components/SIPCalculatorForm";
@@ -30,7 +31,7 @@ const SIPPlannerPage = () => {
         if (!user?.email) return;
 
         const res = await axios.get(
-          `http://localhost:5000/api/watchlist/${user.email}`
+          `${API}/api/watchlist/${user.email}`
         );
 
         if (res.data.success) {

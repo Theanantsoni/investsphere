@@ -5,6 +5,7 @@ import {
   getFundCategory,
   getFundRisk,
 } from "../utils/sipUtils";
+import API from "../../../config/api";
 
 const SIPInvest = ({ fund, user, onClose }) => {
   /* ================= BASIC DATA ================= */
@@ -106,7 +107,7 @@ const SIPInvest = ({ fund, user, onClose }) => {
       console.log("Sending 👉", payload);
 
       const res = await axios.post(
-        "http://localhost:5000/api/sip-investments/add",
+        `${API}/api/sip-investments/add`,
         payload
       );
 

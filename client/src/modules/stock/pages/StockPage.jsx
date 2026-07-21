@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API from "../../../config/api";
 
 import StockHeroSection from "../components/StockHeroSection";
 import StockSearchFilters from "../components/StockSearchFilters";
@@ -45,9 +46,7 @@ const StockPage = () => {
 
   const fetchWatchlist = async (email) => {
     try {
-      const res = await axios.get(
-        `http://localhost:5000/api/watchlist/${email}`,
-      );
+      const res = await axios.get(`${API}/api/watchlist/${email}`);
 
       if (res.data.success) {
         const symbols = res.data.data.map((item) => item.itemCode);
@@ -173,15 +172,12 @@ const StockPage = () => {
     try {
       setWatchLoading(stock.symbol);
 
-      const response = await axios.post(
-        `${API}/watchlist/add`,
-        {
-          email: user.email,
-          itemCode: stock.symbol,
-          itemName: stock.name,
-          type: "stock",
-        },
-      );
+      const response = await axios.post(`${API}/api/watchlist/add`, {
+        email: user.email,
+        itemCode: stock.symbol,
+        itemName: stock.name,
+        type: "stock",
+      });
 
       if (response.data.success) {
         setWatchlist((prev) => [...prev, stock.symbol]);

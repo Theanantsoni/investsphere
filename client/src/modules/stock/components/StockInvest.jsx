@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-
+import API from "../../../config/api";
 const StockInvest = ({ stock, onClose }) => {
 
   /* ================= BASIC DATA ================= */
@@ -67,7 +67,7 @@ const StockInvest = ({ stock, onClose }) => {
       console.log("Stock Order 👉", payload);
 
       const res = await axios.post(
-        "http://localhost:5000/api/stock-investments/add",
+        `${API}/api/stock-investments/add`,
         payload
       );
 

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import API from "../config/api";
 import { useEffect, useState } from "react";
 
 import {
@@ -42,13 +43,13 @@ const Home = () => {
       if (initialLoading) setLoading(true);
 
       // 🔥 Fetch Indices (Backend)
-      const indexRes = await fetch("http://localhost:5000/api/market");
+      const indexRes = await fetch(`${API}/api/market`);
       if (!indexRes.ok) throw new Error("Index API failed");
       const indexData = await indexRes.json();
       setIndices(indexData);
 
       // 🔥 Fetch Crypto + Gold (Backend Proxy)
-      const cryptoRes = await fetch("http://localhost:5000/api/crypto");
+      const cryptoRes = await fetch(`${API}/api/crypto`);
       if (!cryptoRes.ok) throw new Error("Crypto API failed");
       const cryptoData = await cryptoRes.json();
 
@@ -88,7 +89,7 @@ const Home = () => {
   const fetchChartData = async () => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/market-history?symbol=${selectedSymbol}&days=${days}`,
+        `${API}/api/market-history?symbol=${selectedSymbol}&days=${days}`,
       );
 
       const data = await res.json();
