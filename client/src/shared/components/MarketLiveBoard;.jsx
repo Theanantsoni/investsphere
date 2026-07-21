@@ -7,7 +7,7 @@ const MarketLiveBoard = () => {
   useEffect(() => {
     const fetchTicker = async () => {
       try {
-        const res = await fetch(`${API}/ticker`);
+        const res = await fetch(`${API}/api/ticker`);
         if (!res.ok) throw new Error("API failed");
         const data = await res.json();
         if (Array.isArray(data)) setStocks(data.slice(0, 15));
