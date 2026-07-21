@@ -28,6 +28,9 @@ const StockPage = () => {
 
   const { stocks, loading } = useStock();
 
+  console.log("Stocks:", stocks);
+console.log("Loading:", loading);
+
   const itemsPerPage = 15;
 
   /* ================= USER CHECK ================= */
