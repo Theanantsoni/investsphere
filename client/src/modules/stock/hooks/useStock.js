@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API = "http://localhost:5000/api/stocks";
+import API from "../../../config/api";
+
+const API_URL = `${API}/stocks`;
 
 const useStock = () => {
 

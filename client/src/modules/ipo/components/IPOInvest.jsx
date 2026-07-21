@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import axios from "axios";
+import API from "../../../config/api";
+
 
 const IPOInvest = ({ ipo, user, onClose }) => {
   const [lots, setLots] = useState(1);
@@ -53,7 +55,7 @@ const IPOInvest = ({ ipo, user, onClose }) => {
       console.log("IPO Order 👉", payload);
 
       const res = await axios.post(
-        "http://localhost:5000/api/ipo-investments/add",
+        `${API}/ipo-investments/add`,
         payload
       );
 

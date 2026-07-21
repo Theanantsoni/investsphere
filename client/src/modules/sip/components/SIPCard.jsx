@@ -8,6 +8,8 @@ import {
   getFundRisk,
 } from "../utils/sipUtils";
 
+import API from "../../../config/api";
+
 const SIPCard = ({ fund, watchlist = [], setWatchlist, user }) => {
   const navigate = useNavigate();
 
@@ -75,7 +77,7 @@ const SIPCard = ({ fund, watchlist = [], setWatchlist, user }) => {
       setWatchLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/watchlist/add",
+        `${API}/watchlist/add`,
         {
           email,
           itemCode: String(schemeCode),

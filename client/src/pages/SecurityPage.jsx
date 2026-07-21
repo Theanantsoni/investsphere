@@ -5,6 +5,8 @@ import axios from "axios";
 import { changePassword } from "../services/securityService";
 import toast from "react-hot-toast";
 
+import API from "../config/api";
+
 const SecurityPage = () => {
   const navigate = useNavigate();
 
@@ -59,7 +61,7 @@ const SecurityPage = () => {
         const storedUser = JSON.parse(localStorage.getItem("user"));
 
         const loginRes = await axios.post(
-          "http://localhost:5000/api/login",
+          `${API}/login`,
           {
             email: storedUser?.user?.email,
             password: form.newPassword.trim(),

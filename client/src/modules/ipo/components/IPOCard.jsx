@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import IPOInvest from "./IPOInvest";
+import API from "../../../config/api";
+
 
 const IPOCard = ({ ipo }) => {
   const [watchLoading, setWatchLoading] = useState(false);
@@ -123,7 +125,7 @@ const IPOCard = ({ ipo }) => {
       setWatchLoading(true);
 
       const response = await axios.post(
-        "http://localhost:5000/api/watchlist/add",
+        `${API}/watchlist/add`,
         {
           email: user.email,
           itemCode: String(ipo.symbol),

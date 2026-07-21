@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
+import API from "../config/api";
 
 /* ======================================================
    EMAIL MASK
@@ -71,7 +72,7 @@ function LoginPage() {
     try {
       setLoading(true);
 
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post(`${API}/login`, {
         email: form.email.trim().toLowerCase(),
         password: form.password.trim(),
       });
@@ -185,7 +186,7 @@ function LoginPage() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/forgot-password/reset",
+        `${API}/forgot-password/reset`,
         {
           email: email.trim().toLowerCase(),
           password: password.trim(),
@@ -193,7 +194,7 @@ function LoginPage() {
       );
 
       if (res.data.success) {
-        const loginRes = await axios.post("http://localhost:5000/api/login", {
+        const loginRes = await axios.post(`${API}/login`, {
           email: email.trim().toLowerCase(),
           password: password.trim(),
         });

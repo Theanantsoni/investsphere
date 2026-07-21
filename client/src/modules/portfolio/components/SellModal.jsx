@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
+
 /* ====================================================== */
 const SellModal = ({ asset, user, onClose, onSuccess }) => {
   const [quantity, setQuantity] = useState(1);
@@ -67,7 +68,7 @@ const SellModal = ({ asset, user, onClose, onSuccess }) => {
       console.log("📦 SELL PAYLOAD:", payload);
 
       const res = await fetch(
-        "http://localhost:5000/api/orders/sell",
+        `${API}/orders/sell`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

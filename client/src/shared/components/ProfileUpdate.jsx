@@ -3,15 +3,18 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+// import API_URL from "../../../../config/api";
+
+import API from "../../config/api";
 
 /* ======================================================
    AXIOS BASE CONFIG
 ====================================================== */
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",
-  withCredentials: true,
-});
+// const API = axios.create({
+//   baseURL: API_URL,
+//   withCredentials: true,
+// });
 
 const ProfileUpdate = () => {
   const navigate = useNavigate();

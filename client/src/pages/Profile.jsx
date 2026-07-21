@@ -11,9 +11,12 @@ import {
   Clock,
 } from "lucide-react";
 
-import API from "../../config/api"; 
+import API from "../config/api";
 
-const API = import.meta.env.VITE_API_URL;
+// const API = axios.create({
+//   baseURL: API_URL,
+//   withCredentials: true,
+// });
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -21,6 +24,7 @@ const Profile = () => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
 
   /* ================= FETCH USER ================= */
 

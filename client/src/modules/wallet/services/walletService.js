@@ -1,6 +1,8 @@
 import axios from "axios";
+import API_BASE from "../../../config/api";
 
-const API = "http://localhost:5000/api/wallet";
+
+const API = `${API_BASE}/wallet`;
 
 export const getWallet = async (email) => {
   const res = await axios.get(`${API}?email=${email}`);

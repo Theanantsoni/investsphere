@@ -1,3 +1,5 @@
+import API from "../../../config/api";
+
 /* ======================================================
  PORTFOLIO TYPES
 ====================================================== */
@@ -47,7 +49,7 @@ export const PROFIT_COLORS = {
  API ENDPOINTS (🔥 UPDATED - SINGLE API)
 ====================================================== */
 export const PORTFOLIO_API = {
-  BASE: "http://localhost:5000/api",
+  BASE: API,
 
   /* 🔥 NEW UNIFIED API */
   GET_PORTFOLIO: "/portfolio",

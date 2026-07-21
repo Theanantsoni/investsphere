@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API from "../../config/api";
 
 const MarketLiveBoard = () => {
   const [stocks, setStocks] = useState([]);
@@ -6,7 +7,7 @@ const MarketLiveBoard = () => {
   useEffect(() => {
     const fetchTicker = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/ticker");
+        const res = await fetch(`${API}/ticker`);
         if (!res.ok) throw new Error("API failed");
         const data = await res.json();
         if (Array.isArray(data)) setStocks(data.slice(0, 15));

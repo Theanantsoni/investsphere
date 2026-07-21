@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import API from "../config/api";
+
 
 const useReports = () => {
 
@@ -16,7 +18,7 @@ const useReports = () => {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/reports",
+        `${API}/reports`,
         data
       );
 

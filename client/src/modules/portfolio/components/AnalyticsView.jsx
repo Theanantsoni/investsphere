@@ -9,6 +9,7 @@ import {
   Activity,
   RefreshCcw,
 } from "lucide-react";
+import API from "../../../config/api";
 
 import {
   LineChart,
@@ -25,7 +26,7 @@ import {
 ====================================================== */
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API,
   timeout: 20000,
 });
 

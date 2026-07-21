@@ -2,13 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import API from "../../../config/api";
+
 
 /* ======================================================
  AXIOS INSTANCE (BACKEND ONLY)
 ====================================================== */
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API,
   timeout: 20000,
 });
 

@@ -174,7 +174,7 @@ const StockPage = () => {
       setWatchLoading(stock.symbol);
 
       const response = await axios.post(
-        "http://localhost:5000/api/watchlist/add",
+        `${API}/watchlist/add`,
         {
           email: user.email,
           itemCode: stock.symbol,

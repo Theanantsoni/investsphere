@@ -3,6 +3,7 @@ import axios from "axios";
 import { Trash2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import InvestSphereLoader from "../../../shared/components/InvestSphereLoader";
+import API from "../../../config/api";
 
 const IpoWatchlist = ({ data, removeWatchlist }) => {
   const navigate = useNavigate();
@@ -25,9 +26,9 @@ const IpoWatchlist = ({ data, removeWatchlist }) => {
         setLoading(true);
 
         const [upcomingRes, ongoingRes, closedRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/ipo/upcoming"),
-          axios.get("http://localhost:5000/api/ipo/ongoing"),
-          axios.get("http://localhost:5000/api/ipo/closed"),
+          axios.get(`${API}/ipo/upcoming`),
+          axios.get(`${API}/ipo/ongoing`),
+          axios.get(`${API}/ipo/closed`),
         ]);
 
         const allIpos = [

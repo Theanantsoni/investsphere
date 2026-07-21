@@ -8,6 +8,8 @@ import {
   BarChart3,
   LineChart as LineIcon,
 } from "lucide-react";
+import API from "../../../config/api";
+
 
 import {
   LineChart,
@@ -25,7 +27,7 @@ import {
  AXIOS
 ====================================================== */
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API,
   timeout: 20000,
 });
 

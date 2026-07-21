@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:5000/api/reports";
+const API_BASE = `${API}/reports`;
+import API from "../config/api";
 
 /* ======================================================
    CREATE REPORT
